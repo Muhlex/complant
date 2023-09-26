@@ -1,6 +1,7 @@
 from machine import Pin
 from time import sleep_ms
 from neopixel import NeoPixel
+from dfplayer import DFPlayer
 
 def demo_pixels(np: NeoPixel):
 	n = np.n
@@ -43,17 +44,48 @@ def demo_pixels(np: NeoPixel):
 class IO:
 	led = Pin(2, Pin.OUT)
 	pixels = NeoPixel(Pin(23, Pin.OUT), 24)
+	# audio = DFPlayer(2, tx=17, rx=16)
+	audio = DFPlayer(2)
+
+	motion = Pin(22, Pin.IN)
 
 
 try:
-	print("Running NeoPixel demo.")
-	demo_pixels(IO.pixels)
-	print("Blinking inbuilt LED.")
+	# print("Running NeoPixel demo.")
+	# demo_pixels(IO.pixels)
+	# print("Showing motion sensor data on internal LED.")
+	# while True:
+	# 	IO.led.value(IO.motion.value())
+	# 	sleep_ms(20)
+	volume = 10
+	play = (1, 1)
+	eq = DFPlayer.EQ_JAZZ
+	print("Setting volume to", volume)
+	IO.audio.volume(volume)
+	print("DFPlayer volume reports:", IO.audio.volume())
+
+	print("Setting equalizer to", eq)
+	IO.audio.eq(eq)
+	print("DFPlayer equalizer reports:", IO.audio.eq())
+
+	print("DFPlayer state:", IO.audio.state())
+
+	print("Playing track", play[0], "in folder", play[1])
+	IO.audio.play(*play)
+
+	print("DFPlayer state:", IO.audio.state())
+
+	sleep_ms(5000)
+
+	print("Pausing")
+	IO.audio.pause()
+	sleep_ms(1500)
+	print("Resuming")
+	IO.audio.resume()
+
 	while True:
-		IO.led.on()
-		sleep_ms(800)
-		IO.led.off()
-		sleep_ms(2000)
+		sleep_ms(100)
+		pass
 
 except KeyboardInterrupt:
 	print("Exiting gracefully...")
@@ -63,3 +95,4 @@ finally:
 	IO.led.off()
 	IO.pixels.fill((0, 0, 0))
 	IO.pixels.write()
+	IO.audio.reset()
