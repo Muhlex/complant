@@ -4,12 +4,13 @@ except ImportError:
 	pass
 
 from machine import UART
+from time import sleep_ms
 
 class DFPlayerError(Exception):
 	pass
 class DFPlayerUnavailableError(DFPlayerError):
 	pass
-class DFPlayerRequestRetransmitError(DFPlayerError):
+class DFPlayerResponseError(DFPlayerError):
 	pass
 class DFPlayerUnexpectedResponseError(DFPlayerError):
 	pass
@@ -20,7 +21,11 @@ class DFPlayer:
 	_START_BIT = 0x7E
 	_END_BIT   = 0xEF
 	_VERSION   = 0xFF
-	_CMD_RETRIES = 4
+	_CMD_TRIES = 6
+
+	STATE_STOPPED = 0
+	STATE_PLAYING = 1
+	STATE_PAUSED  = 2
 
 	EQ_NORMAL  = 0
 	EQ_POP     = 1
@@ -30,12 +35,12 @@ class DFPlayer:
 	EQ_BASS    = 5
 
 	def __init__(self, uart_id: int, tx: int | None = None, rx: int | None = None):
-		self.uart = UART(uart_id)
-		self.uart.init(
+		self._uart = UART(uart_id)
+		self._uart.init(
 			baudrate=9600, bits=8, parity=None, stop=1, timeout=100,
 			tx=tx or -1, rx=rx or -1
 		)
-		self.buffer_send = bytearray([
+		self._buffer_send = bytearray([
 			DFPlayer._START_BIT,
 			DFPlayer._VERSION,
 			6, # number of byes w/o start, end, verification
@@ -47,57 +52,61 @@ class DFPlayer:
 			0, # checksum
 			DFPlayer._END_BIT
 		])
-		self.buffer_read = bytearray(10)
+		self._buffer_read = bytearray(10)
 
-	def send_cmd(self, cmd: int, param1 = 0, param2: int | None = None):
+	def _log(self, *args):
+		print("[DF]", *args)
+
+	def send_cmd(self, cmd: int, param1 = 0, param2: int | None = None, read_delay = 0):
 		if param2 == None:
 			param1, param2 = self._uint16_to_bytes(param1)
 
-		bytes = self.buffer_send
+		bytes = self._buffer_send
 		bytes[3] = cmd
 		bytes[5] = param1
 		bytes[6] = param2
 		bytes[7], bytes[8] = self._uint16_to_bytes(self._checksum(bytes))
 
 		exception: DFPlayerError | None = None
-		for _ in range(DFPlayer._CMD_RETRIES):
-			if DFPlayer.debug: print("<-- Sending CMD", hex(cmd))
+		for i in reversed(range(DFPlayer._CMD_TRIES)):
+			if DFPlayer.debug: self._log("<-- Sending CMD", hex(cmd))
 
-			self.uart.write(bytes)
-			self.uart.flush()
+			self._uart.write(bytes)
+			self._uart.flush()
+			sleep_ms(read_delay)
 			try:
 				self._read() # try to read the ACK response
 			except DFPlayerError as e:
 				exception = e
-				if DFPlayer.debug:
-					print(e)
-					print("Retrying command...")
+				if DFPlayer.debug and i > 0:
+					self._log(e)
+					self._log("Retrying command...")
 				continue
 
-			command = self.buffer_read[3]
+			command = self._buffer_read[3]
 			if command != 0x41: # ACK
 				raise DFPlayerUnexpectedResponseError("ACK expected, instead received: " + hex(command))
-			if DFPlayer.debug: print("--> ACKed CMD", hex(cmd))
+			if DFPlayer.debug: self._log("--> ACKed CMD", hex(cmd))
 			return
 
 		raise exception
 
-	def send_query(self, cmd: int, param1 = 0, param2: int | None = None):
-		self.send_cmd(cmd, param1, param2)
+	def send_query(self, cmd: int, param1 = 0, param2: int | None = None, read_delay = 0):
+		self.send_cmd(cmd, param1, param2, read_delay)
 		self._read()
-		bytes = self.buffer_read
+		bytes = self._buffer_read
 		command = bytes[3]
 		if command != cmd:
 			raise DFPlayerUnexpectedResponseError("Query for " + hex(cmd) + " returned command " + hex(command))
 		return bytes
 
 	def _read(self):
-		bytes = self.buffer_read
+		bytes = self._buffer_read
 		# Invalidate old readings:
 		bytes[0] = 0
 		bytes[1] = 0
 		bytes[9] = 0
-		readinto = self.uart.readinto(bytes)
+		readinto = self._uart.readinto(bytes)
 		if readinto is None:
 			raise DFPlayerUnavailableError("Response timed out")
 		if bytes[0] != DFPlayer._START_BIT or bytes[1] != DFPlayer._VERSION or bytes[9] != DFPlayer._END_BIT:
@@ -105,14 +114,21 @@ class DFPlayer:
 		if (bytes[7], bytes[8]) != self._uint16_to_bytes(self._checksum(bytes)):
 			raise DFPlayerUnavailableError("Malformed response: Invalid checksum");
 		if bytes[3] == 0x40: # error response
-			if bytes[6] == 0:
-				raise DFPlayerRequestRetransmitError("Was busy")
-			elif bytes[6] == 1:
-				raise DFPlayerRequestRetransmitError("Frame data not fully received")
-			elif bytes[6] == 2:
-				raise DFPlayerRequestRetransmitError("Verification error")
+			err_code = bytes[6]
+			err_code_readable = "(" + hex(err_code) + ")"
+			if err_code == 0x00:
+				raise DFPlayerResponseError("Module is busy " + err_code_readable)
+			elif err_code == 0x01:
+				raise DFPlayerResponseError("Received incomplete frame " + err_code_readable)
+			elif err_code == 0x02:
+				raise DFPlayerResponseError("Received corrupt frame " + err_code_readable)
 			else:
-				raise DFPlayerRequestRetransmitError()
+				raise DFPlayerResponseError("Unknown error " + err_code_readable)
+		if (0xF0 & bytes[3]) == 0x30: # event notification
+			# ignore them for now
+			if DFPlayer.debug: self._log("Received event notification (" + hex(bytes[3]) + "), re-reading...")
+			self._read()
+
 
 	def _checksum(self, bytes: bytearray):
 		result = 0
@@ -123,22 +139,29 @@ class DFPlayer:
 	def _uint16_to_bytes(self, value: int):
 		return (value >> 8 & 0xFF), (value & 0xFF)
 
-	def play(self, file: int, folder: int | Literal["mp3"] | None = None):
-		if folder is None:
-			self.send_cmd(0x03, file) # play from root
-		elif folder == "mp3":
+	def play_root(self, file: int):
+		self.send_cmd(0x03, file)
+
+	def play(self, folder: int | Literal["mp3"] | Literal["advert"], file: int):
+		if folder == "mp3":
 			self.send_cmd(0x12, file) # play from "MP3" folder
+		elif folder == "advert":
+			self.send_cmd(0x13, file) # play from "ADVERT" folder
 		else:
 			self.send_cmd(0x0F, folder, file) # play from numbered folder
 
 	def resume(self):
-		self.send_cmd(0x0D)
+		# DFPlayer seems to take long to process resuming
+		self.send_cmd(0x0D, read_delay=50)
 
 	def pause(self):
 		self.send_cmd(0x0E)
 
 	def stop(self):
 		self.send_cmd(0x16)
+
+	def stop_advert(self):
+		self.send_cmd(0x15)
 
 	def next(self):
 		self.send_cmd(0x01)
@@ -180,6 +203,8 @@ class DFPlayer:
 		def send_cmd(self, cmd: int, param1: int) -> None: ...
 		@overload
 		def send_cmd(self, cmd: int, param1: int, param2: int) -> None: ...
+		@overload
+		def send_cmd(self, cmd: int, param1: int, param2: int, read_delay: int) -> None: ...
 
 		@overload
 		def send_query(self, cmd: int) -> bytearray: ...
@@ -187,6 +212,8 @@ class DFPlayer:
 		def send_query(self, cmd: int, param1: int) -> bytearray: ...
 		@overload
 		def send_query(self, cmd: int, param1: int, param2: int) -> bytearray: ...
+		@overload
+		def send_query(self, cmd: int, param1: int, param2: int, read_delay: int) -> bytearray: ...
 
 		@overload
 		def volume(self) -> int: ...

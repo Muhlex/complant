@@ -57,9 +57,14 @@ try:
 	# while True:
 	# 	IO.led.value(IO.motion.value())
 	# 	sleep_ms(20)
-	volume = 10
+	volume = 15
 	play = (1, 1)
 	eq = DFPlayer.EQ_JAZZ
+	states = [None] * 3
+	states[DFPlayer.STATE_PAUSED] = "paused"
+	states[DFPlayer.STATE_PLAYING] = "playing"
+	states[DFPlayer.STATE_STOPPED] = "stopped"
+
 	print("Setting volume to", volume)
 	IO.audio.volume(volume)
 	print("DFPlayer volume reports:", IO.audio.volume())
@@ -68,20 +73,32 @@ try:
 	IO.audio.eq(eq)
 	print("DFPlayer equalizer reports:", IO.audio.eq())
 
-	print("DFPlayer state:", IO.audio.state())
+	# print("Playing track", play[0], "in folder", play[1])
+	# IO.audio.play(*play)
 
-	print("Playing track", play[0], "in folder", play[1])
-	IO.audio.play(*play)
+	IO.audio.play("mp3", 1)
 
-	print("DFPlayer state:", IO.audio.state())
+	print("DFPlayer state:", states[IO.audio.state()])
 
-	sleep_ms(5000)
+	sleep_ms(300)
+	IO.audio.play("advert", 1)
+	sleep_ms(300)
+	IO.audio.play("advert", 1)
 
-	print("Pausing")
-	IO.audio.pause()
-	sleep_ms(1500)
-	print("Resuming")
-	IO.audio.resume()
+	# sleep_ms(4000)
+	# print("Pausing")
+	# IO.audio.pause()
+	# print("DFPlayer state:", IO.audio.state())
+
+	# sleep_ms(1500)
+	# print("Resuming")
+	# IO.audio.resume()
+	# print("DFPlayer state:", IO.audio.state())
+
+	# sleep_ms(1500)
+	# print("Stopping")
+	# IO.audio.stop()
+	# print("DFPlayer state:", IO.audio.state())
 
 	while True:
 		sleep_ms(100)
