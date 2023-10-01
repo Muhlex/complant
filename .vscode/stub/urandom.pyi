@@ -1,5 +1,5 @@
 """
-random numbers. See: https://docs.micropython.org/en/v1.19.1/library/random.html
+random numbers. See: https://docs.micropython.org/en/v1.20.0/library/random.html
 
 This module implements a pseudo-random number generator (PRNG).
 
@@ -27,6 +27,24 @@ This module implements a pseudo-random number generator (PRNG).
 """
 from typing import Optional, Any
 
+def randrange(start, stop, step: Optional[Any] = None) -> int:
+    """
+    The first form returns a random integer from the range [0, *stop*).
+    The second form returns a random integer from the range [*start*, *stop*).
+    The third form returns a random integer from the range [*start*, *stop*) in
+    steps of *step*.  For instance, calling ``randrange(1, 10, 2)`` will
+    return odd numbers between 1 and 9 inclusive.
+
+    """
+    ...
+
+class random:
+    """
+    Return a random floating point number in the range [0.0, 1.0).
+    """
+
+    def __init__(self) -> None: ...
+
 def seed(n=None, /) -> None:
     """
     Initialise the random number generator module with the seed *n* which should
@@ -36,6 +54,27 @@ def seed(n=None, /) -> None:
 
     The ``None`` case only works if ``MICROPY_PY_URANDOM_SEED_INIT_FUNC`` is
     enabled by the port, otherwise it raises ``ValueError``.
+    """
+    ...
+
+def uniform(a, b) -> int:
+    """
+    Return a random floating point number N such that *a* <= N <= *b* for *a* <= *b*,
+    and *b* <= N <= *a* for *b* < *a*.
+
+    """
+    ...
+
+def choice(sequence) -> Any:
+    """
+    Chooses and returns one item at random from *sequence* (tuple, list or
+    any object that supports the subscript operation).
+    """
+    ...
+
+def randint(a, b) -> int:
+    """
+    Return a random integer in the range [*a*, *b*].
     """
     ...
 

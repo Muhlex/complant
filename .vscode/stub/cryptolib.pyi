@@ -1,12 +1,22 @@
 """
 cryptographic ciphers. See: https://docs.micropython.org/en/v1.20.0/library/cryptolib.html
 """
-
-# source version: v1_20_0
-# origin module:: repos/micropython/docs/library/cryptolib.rst
-from typing import Any, Optional
+from typing import Optional, Any
 
 class aes:
+    def encrypt(self, in_buf, out_buf: Optional[Any] = None) -> Any:
+        """
+        Encrypt *in_buf*. If no *out_buf* is given result is returned as a
+        newly allocated `bytes` object. Otherwise, result is written into
+        mutable buffer *out_buf*. *in_buf* and *out_buf* can also refer
+        to the same mutable buffer, in which case data is encrypted in-place.
+        """
+        ...
+    def decrypt(self, in_buf, out_buf: Optional[Any] = None) -> Any:
+        """
+        Like `encrypt()`, but for decryption.
+        """
+        ...
     def __init__(self, key, mode, IV: Optional[Any] = None) -> None:
         """
         Initialize cipher object, suitable for encryption/decryption. Note:
@@ -25,18 +35,5 @@ class aes:
 
             * *IV* is an initialization vector for CBC mode.
             * For Counter mode, *IV* is the initial value for the counter.
-        """
-        ...
-    def encrypt(self, in_buf, out_buf: Optional[Any] = None) -> Any:
-        """
-        Encrypt *in_buf*. If no *out_buf* is given result is returned as a
-        newly allocated `bytes` object. Otherwise, result is written into
-        mutable buffer *out_buf*. *in_buf* and *out_buf* can also refer
-        to the same mutable buffer, in which case data is encrypted in-place.
-        """
-        ...
-    def decrypt(self, in_buf, out_buf: Optional[Any] = None) -> Any:
-        """
-        Like `encrypt()`, but for decryption.
         """
         ...

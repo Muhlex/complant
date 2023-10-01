@@ -8,107 +8,46 @@ module is to define data structure layout with about the same power as the
 C language allows, and then access it using familiar dot-syntax to reference
 sub-fields.
 """
-
-# source version: v1_20_0
-# origin module:: repos/micropython/docs/library/uctypes.rst
 from typing import Any
 
-LITTLE_ENDIAN: bytes
-"""\
-Layout type for a little-endian packed structure. (Packed means that every
-field occupies exactly as many bytes as defined in the descriptor, i.e.
-the alignment is 1).
-"""
-BIG_ENDIAN: Any = ...
-"""Layout type for a big-endian packed structure."""
-NATIVE: Any = ...
-"""\
-Layout type for a native structure - with data endianness and alignment
-conforming to the ABI of the system on which MicroPython runs.
-"""
-UINT8: int = 1
-"""\
-Integer types for structure descriptors. Constants for 8, 16, 32,
-and 64 bit types are provided, both signed and unsigned.
-"""
-INT8: int = 1
-"""\
-Integer types for structure descriptors. Constants for 8, 16, 32,
-and 64 bit types are provided, both signed and unsigned.
-"""
-UINT16: int = 1
-"""\
-Integer types for structure descriptors. Constants for 8, 16, 32,
-and 64 bit types are provided, both signed and unsigned.
-"""
-INT16: int = 1
-"""\
-Integer types for structure descriptors. Constants for 8, 16, 32,
-and 64 bit types are provided, both signed and unsigned.
-"""
-UINT32: int = 1
-"""\
-Integer types for structure descriptors. Constants for 8, 16, 32,
-and 64 bit types are provided, both signed and unsigned.
-"""
-INT32: int = 1
-"""\
-Integer types for structure descriptors. Constants for 8, 16, 32,
-and 64 bit types are provided, both signed and unsigned.
-"""
-UINT64: int = 1
-"""\
-Integer types for structure descriptors. Constants for 8, 16, 32,
-and 64 bit types are provided, both signed and unsigned.
-"""
-INT64: int = 1
-"""\
-Integer types for structure descriptors. Constants for 8, 16, 32,
-and 64 bit types are provided, both signed and unsigned.
-"""
-FLOAT32: Any = ...
-"""Floating-point types for structure descriptors."""
-FLOAT64: Any = ...
-"""Floating-point types for structure descriptors."""
-VOID: Any = ...
-"""\
-``VOID`` is an alias for ``UINT8``, and is provided to conveniently define
-C's void pointers: ``(uctypes.PTR, uctypes.VOID)``.
-"""
-PTR: Any = ...
-"""\
-Type constants for pointers and arrays. Note that there is no explicit
-constant for structures, it's implicit: an aggregate type without ``PTR``
-or ``ARRAY`` flags is a structure.
-"""
-ARRAY: Any = ...
-"""\
-Type constants for pointers and arrays. Note that there is no explicit
-constant for structures, it's implicit: an aggregate type without ``PTR``
-or ``ARRAY`` flags is a structure.
-"""
-
-class struct:
-    """
-    Instantiate a "foreign data structure" object based on structure address in
-    memory, descriptor (encoded as a dictionary), and layout type (see below).
-    """
-
-    def __init__(self, addr, descriptor, layout_type=NATIVE, /) -> None: ...
+VOID: int
+NATIVE: int
+PTR: int
+SHORT: int
+LONGLONG: int
+INT8: int
+LITTLE_ENDIAN: int
+LONG: int
+UINT: int
+ULONG: int
+ULONGLONG: int
+USHORT: int
+UINT8: int
+UINT16: int
+UINT32: int
+UINT64: int
+INT64: int
+BFUINT16: int
+BFUINT32: int
+BFUINT8: int
+BFINT8: int
+ARRAY: int
+BFINT16: int
+BFINT32: int
+BF_LEN: int
+INT: int
+INT16: int
+INT32: int
+FLOAT64: int
+BF_POS: int
+BIG_ENDIAN: int
+FLOAT32: int
 
 def sizeof(struct, layout_type=NATIVE, /) -> int:
     """
     Return size of data structure in bytes. The *struct* argument can be
     either a structure class or a specific instantiated structure object
     (or its aggregate field).
-    """
-    ...
-
-def addressof(obj) -> int:
-    """
-    Return address of an object. Argument should be bytes, bytearray or
-    other object supporting buffer protocol (and address of this buffer
-    is what actually returned).
     """
     ...
 
@@ -129,3 +68,19 @@ def bytearray_at(addr, size) -> bytearray:
     at the given memory address.
     """
     ...
+
+def addressof(obj) -> int:
+    """
+    Return address of an object. Argument should be bytes, bytearray or
+    other object supporting buffer protocol (and address of this buffer
+    is what actually returned).
+    """
+    ...
+
+class struct:
+    """
+    Instantiate a "foreign data structure" object based on structure address in
+    memory, descriptor (encoded as a dictionary), and layout type (see below).
+    """
+
+    def __init__(self, addr, descriptor, layout_type=NATIVE, /) -> None: ...

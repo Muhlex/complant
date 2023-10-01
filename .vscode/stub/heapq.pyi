@@ -9,16 +9,7 @@ This module implements the
 A heap queue is essentially a list that has its elements stored in such a way
 that the first item of the list is always the smallest.
 """
-
-# source version: v1_20_0
-# origin module:: repos/micropython/docs/library/heapq.rst
 from typing import Any
-
-def heappush(heap, item) -> Any:
-    """
-    Push the ``item`` onto the ``heap``.
-    """
-    ...
 
 def heappop(heap) -> Any:
     """
@@ -26,6 +17,12 @@ def heappop(heap) -> Any:
     ``heap`` is empty.
 
     The returned item will be the smallest item in the ``heap``.
+    """
+    ...
+
+def heappush(heap, item) -> Any:
+    """
+    Push the ``item`` onto the ``heap``.
     """
     ...
 

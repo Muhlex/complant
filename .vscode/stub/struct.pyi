@@ -51,23 +51,7 @@ The following data types are supported:
 | P      | void *             | integer           |               |
 +--------+--------------------+-------------------+---------------+
 """
-
-# source version: v1_20_0
-# origin module:: repos/micropython/docs/library/struct.rst
-from typing import Any, Tuple
-
-def calcsize(fmt) -> int:
-    """
-    Return the number of bytes needed to store the given *fmt*.
-    """
-    ...
-
-def pack(fmt, v1, *args, **kwargs) -> bytes:
-    """
-    Pack the values *v1*, *v2*, ... according to the format string *fmt*.
-    The return value is a bytes object encoding the values.
-    """
-    ...
+from typing import Tuple, Any
 
 def pack_into(fmt, buffer, offset, v1, *args, **kwargs) -> Any:
     """
@@ -89,5 +73,18 @@ def unpack_from(fmt, data, offset=0, /) -> Tuple:
     Unpack from the *data* starting at *offset* according to the format string
     *fmt*. *offset* may be negative to count from the end of *data*. The return
     value is a tuple of the unpacked values.
+    """
+    ...
+
+def pack(fmt, v1, *args, **kwargs) -> bytes:
+    """
+    Pack the values *v1*, *v2*, ... according to the format string *fmt*.
+    The return value is a bytes object encoding the values.
+    """
+    ...
+
+def calcsize(fmt) -> int:
+    """
+    Return the number of bytes needed to store the given *fmt*.
     """
     ...

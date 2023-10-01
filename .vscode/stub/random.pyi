@@ -25,29 +25,7 @@ This module implements a pseudo-random number generator (PRNG).
    enabled.
 
 """
-
-# source version: v1_20_0
-# origin module:: repos/micropython/docs/library/random.rst
-from typing import Any, Optional
-
-class random:
-    """
-    Return a random floating point number in the range [0.0, 1.0).
-    """
-
-    def __init__(self) -> None: ...
-
-def getrandbits(n) -> int:
-    """
-    Return an integer with *n* random bits (0 <= n <= 32).
-    """
-    ...
-
-def randint(a, b) -> int:
-    """
-    Return a random integer in the range [*a*, *b*].
-    """
-    ...
+from typing import Optional, Any
 
 def randrange(start, stop, step: Optional[Any] = None) -> int:
     """
@@ -60,13 +38,12 @@ def randrange(start, stop, step: Optional[Any] = None) -> int:
     """
     ...
 
-def uniform(a, b) -> int:
+class random:
     """
-    Return a random floating point number N such that *a* <= N <= *b* for *a* <= *b*,
-    and *b* <= N <= *a* for *b* < *a*.
+    Return a random floating point number in the range [0.0, 1.0).
+    """
 
-    """
-    ...
+    def __init__(self) -> None: ...
 
 def seed(n=None, /) -> None:
     """
@@ -80,9 +57,29 @@ def seed(n=None, /) -> None:
     """
     ...
 
+def uniform(a, b) -> int:
+    """
+    Return a random floating point number N such that *a* <= N <= *b* for *a* <= *b*,
+    and *b* <= N <= *a* for *b* < *a*.
+
+    """
+    ...
+
 def choice(sequence) -> Any:
     """
     Chooses and returns one item at random from *sequence* (tuple, list or
     any object that supports the subscript operation).
+    """
+    ...
+
+def randint(a, b) -> int:
+    """
+    Return a random integer in the range [*a*, *b*].
+    """
+    ...
+
+def getrandbits(n) -> int:
+    """
+    Return an integer with *n* random bits (0 <= n <= 32).
     """
     ...

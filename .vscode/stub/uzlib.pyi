@@ -8,19 +8,7 @@ This module allows to decompress binary data compressed with
 (commonly used in zlib library and gzip archiver). Compression
 is not yet implemented.
 """
-
-# source version: v1_20_0
-# origin module:: repos/micropython/docs/library/zlib.rst
-class DecompIO:
-    """
-    Create a `stream` wrapper which allows transparent decompression of
-    compressed data in another *stream*. This allows to process compressed
-    streams with data larger than available heap size. In addition to
-    values described in :func:`decompress`, *wbits* may take values
-    24..31 (16 + 8..15), meaning that input stream has gzip header.
-    """
-
-    def __init__(self, stream, wbits=0, /) -> None: ...
+from typing import Any
 
 def decompress(data, wbits=0, bufsize=0, /) -> bytes:
     """
@@ -32,3 +20,17 @@ def decompress(data, wbits=0, bufsize=0, /) -> bytes:
     CPython and is ignored.
     """
     ...
+
+class DecompIO:
+    """
+    Create a `stream` wrapper which allows transparent decompression of
+    compressed data in another *stream*. This allows to process compressed
+    streams with data larger than available heap size. In addition to
+    values described in :func:`decompress`, *wbits* may take values
+    24..31 (16 + 8..15), meaning that input stream has gzip header.
+    """
+
+    def readinto(self, *args, **kwargs) -> Any: ...
+    def readline(self, *args, **kwargs) -> Any: ...
+    def read(self, *args, **kwargs) -> Any: ...
+    def __init__(self, stream, wbits=0, /) -> None: ...

@@ -1,5 +1,5 @@
 """
-cryptographic ciphers. See: https://docs.micropython.org/en/v1.19.1/library/cryptolib.html
+cryptographic ciphers. See: https://docs.micropython.org/en/v1.20.0/library/cryptolib.html
 """
 from typing import Optional, Any
 

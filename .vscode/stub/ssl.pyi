@@ -7,19 +7,11 @@ This module provides access to Transport Layer Security (previously and
 widely known as “Secure Sockets Layer”) encryption and peer authentication
 facilities for network sockets, both client-side and server-side.
 """
-
-# source version: v1_20_0
-# origin module:: repos/micropython/docs/library/ssl.rst
 from typing import Any
 
-SSLError: Any = ...
-"""This exception does NOT exist. Instead its base class, OSError, is used."""
-CERT_NONE: Any = ...
-"""Supported values for *cert_reqs* parameter."""
-CERT_OPTIONAL: Any = ...
-"""Supported values for *cert_reqs* parameter."""
-CERT_REQUIRED: Any = ...
-"""Supported values for *cert_reqs* parameter."""
+CERT_OPTIONAL: int
+CERT_REQUIRED: int
+CERT_NONE: int
 
 def wrap_socket(
     sock, server_side=False, keyfile=None, certfile=None, cert_reqs=None, cadata=None, server_hostname=None, do_handshake=True

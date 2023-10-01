@@ -4,7 +4,7 @@ access and control MicroPython internals. See: https://docs.micropython.org/en/v
 
 # source version: v1_20_0
 # origin module:: repos/micropython/docs/library/micropython.rst
-from typing import Any, Optional, Tuple, Union
+from typing import Any,Callable, Optional, Tuple, Union
 
 def const(expr) -> Union[int, bytes, str, Tuple]:
     """
@@ -162,5 +162,22 @@ def schedule(func, arg) -> Any:
 
     There is a finite queue to hold the scheduled functions and `schedule()`
     will raise a `RuntimeError` if the queue is full.
+    """
+    ...
+
+def viper(func: Callable) -> Callable:
+    """
+    The Viper code emitter is not fully compliant. It supports special Viper native data types in pursuit of performance.
+    Integer processing is non-compliant because it uses machine words: arithmetic on 32 bit hardware is performed modulo 2**32.
+    Like the Native emitter Viper produces machine instructions but further optimisations are performed, substantially increasing
+    performance especially for integer arithmetic and bit manipulations.
+    """
+    ...
+
+def native(func: Callable) -> Callable:
+    """
+    This causes the MicroPython compiler to emit native CPU opcodes rather than bytecode.
+    It covers the bulk of the MicroPython functionality, so most functions will require no adaptation.
+    See: https://docs.micropython.org/en/latest/reference/speed_python.html?highlight=viper#the-native-code-emitter
     """
     ...

@@ -9,49 +9,20 @@ working with complex numbers.
 Availability: not available on WiPy and ESP8266. Floating point support
 required for this module.
 """
-
-# source version: v1_20_0
-# origin module:: repos/micropython/docs/library/cmath.rst
-from typing import Any, Tuple
+from typing import Tuple, Any
 
 e: float
-"""base of the natural logarithm"""
 pi: float
-"""the ratio of a circle's circumference to its diameter"""
-
-def cos(z) -> float:
-    """
-    Return the cosine of ``z``.
-    """
-    ...
-
-def exp(z) -> float:
-    """
-    Return the exponential of ``z``.
-    """
-    ...
-
-def log(z) -> float:
-    """
-    Return the natural logarithm of ``z``.  The branch cut is along the negative real axis.
-    """
-    ...
-
-def log10(z) -> float:
-    """
-    Return the base-10 logarithm of ``z``.  The branch cut is along the negative real axis.
-    """
-    ...
-
-def phase(z) -> float:
-    """
-    Returns the phase of the number ``z``, in the range (-pi, +pi].
-    """
-    ...
 
 def polar(z) -> Tuple:
     """
     Returns, as a tuple, the polar form of ``z``.
+    """
+    ...
+
+def sqrt(z) -> Any:
+    """
+    Return the square-root of ``z``.
     """
     ...
 
@@ -67,8 +38,32 @@ def sin(z) -> float:
     """
     ...
 
-def sqrt(z) -> Any:
+def exp(z) -> float:
     """
-    Return the square-root of ``z``.
+    Return the exponential of ``z``.
+    """
+    ...
+
+def cos(z) -> float:
+    """
+    Return the cosine of ``z``.
+    """
+    ...
+
+def phase(z) -> float:
+    """
+    Returns the phase of the number ``z``, in the range (-pi, +pi].
+    """
+    ...
+
+def log(z) -> float:
+    """
+    Return the natural logarithm of ``z``.  The branch cut is along the negative real axis.
+    """
+    ...
+
+def log10(z) -> float:
+    """
+    Return the base-10 logarithm of ``z``.  The branch cut is along the negative real axis.
     """
     ...

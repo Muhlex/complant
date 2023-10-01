@@ -3,29 +3,7 @@ control the garbage collector. See: https://docs.micropython.org/en/v1.20.0/libr
 
 |see_cpython_module| :mod:`python:gc` https://docs.python.org/3/library/gc.html .
 """
-
-# source version: v1_20_0
-# origin module:: repos/micropython/docs/library/gc.rst
-from typing import Any, Optional
-
-def enable() -> None:
-    """
-    Enable automatic garbage collection.
-    """
-    ...
-
-def disable() -> None:
-    """
-    Disable automatic garbage collection.  Heap memory can still be allocated,
-    and garbage collection can still be initiated manually using :meth:`gc.collect`.
-    """
-    ...
-
-def collect() -> None:
-    """
-    Run a garbage collection.
-    """
-    ...
+from typing import Optional, Any
 
 def mem_alloc() -> int:
     """
@@ -33,6 +11,7 @@ def mem_alloc() -> int:
     """
     ...
 
+def isenabled(*args, **kwargs) -> Any: ...
 def mem_free() -> int:
     """
     Return the number of bytes of available heap RAM, or -1 if this amount
@@ -56,5 +35,24 @@ def threshold(amount: Optional[Any] = None) -> Any:
 
     Calling the function without argument will return the current value of
     the threshold. A value of -1 means a disabled allocation threshold.
+    """
+    ...
+
+def collect() -> None:
+    """
+    Run a garbage collection.
+    """
+    ...
+
+def enable() -> None:
+    """
+    Enable automatic garbage collection.
+    """
+    ...
+
+def disable() -> None:
+    """
+    Disable automatic garbage collection.  Heap memory can still be allocated,
+    and garbage collection can still be initiated manually using :meth:`gc.collect`.
     """
     ...

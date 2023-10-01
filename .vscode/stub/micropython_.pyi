@@ -1,10 +1,7 @@
 """
 access and control MicroPython internals. See: https://docs.micropython.org/en/v1.19.1/library/micropython.html
 """
-# MCU: {'ver': 'v1.19.1', 'build': '', 'platform': 'esp8266', 'port': 'esp8266', 'machine': 'ESP module (1M) with ESP8266', 'release': '1.19.1', 'nodename': 'esp8266', 'name': 'micropython', 'family': 'micropython', 'sysname': 'esp8266', 'version': '1.19.1'}
-# Stubber: 1.9.11
-from typing import Optional, Any
-
+from typing import Optional, Any, Callable
 
 def opt_level(level: Optional[Any] = None) -> Any:
     """
@@ -26,7 +23,6 @@ def opt_level(level: Optional[Any] = None) -> Any:
     """
     ...
 
-
 def mem_info(verbose: Optional[Any] = None) -> None:
     """
     Print information about currently used memory.  If the *verbose* argument
@@ -38,7 +34,6 @@ def mem_info(verbose: Optional[Any] = None) -> None:
     """
     ...
 
-
 def stack_use() -> int:
     """
     Return an integer representing the current amount of stack that is being
@@ -46,7 +41,6 @@ def stack_use() -> int:
     should be used to compute differences in stack usage at different points.
     """
     ...
-
 
 def qstr_info(verbose: Optional[Any] = None) -> None:
     """
@@ -58,7 +52,6 @@ def qstr_info(verbose: Optional[Any] = None) -> None:
     verbose mode it prints out the names of all RAM-interned strings.
     """
     ...
-
 
 def schedule(func, arg) -> Any:
     """
@@ -97,7 +90,6 @@ def schedule(func, arg) -> Any:
     """
     ...
 
-
 def alloc_emergency_exception_buf(size) -> Any:
     """
     Allocate *size* bytes of RAM for the emergency exception buffer (a good
@@ -110,7 +102,6 @@ def alloc_emergency_exception_buf(size) -> Any:
     for all the code following it.
     """
     ...
-
 
 def const(expr) -> int:
     """
@@ -134,7 +125,6 @@ def const(expr) -> int:
     """
     ...
 
-
 def kbd_intr(chr) -> None:
     """
     Set the character that will raise a `KeyboardInterrupt` exception.  By
@@ -148,10 +138,21 @@ def kbd_intr(chr) -> None:
     """
     ...
 
-
-def heap_lock() -> Any:
+def heap_lock() -> Any: ...
+def heap_unlock() -> Any: ...
+def viper(func: Callable) -> Callable:
+    """
+    The Viper code emitter is not fully compliant. It supports special Viper native data types in pursuit of performance.
+    Integer processing is non-compliant because it uses machine words: arithmetic on 32 bit hardware is performed modulo 2**32.
+    Like the Native emitter Viper produces machine instructions but further optimisations are performed, substantially increasing
+    performance especially for integer arithmetic and bit manipulations.
+    """
     ...
 
-
-def heap_unlock() -> Any:
+def native(func: Callable) -> Callable:
+    """
+    This causes the MicroPython compiler to emit native CPU opcodes rather than bytecode.
+    It covers the bulk of the MicroPython functionality, so most functions will require no adaptation.
+    See: https://docs.micropython.org/en/latest/reference/speed_python.html?highlight=viper#the-native-code-emitter
+    """
     ...
