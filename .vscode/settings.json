@@ -2,5 +2,8 @@
 	"python.languageServer": "Pylance",
 	"python.analysis.typeCheckingMode": "strict",
 	"python.analysis.stubPath": ".vscode/stub",
-	"python.analysis.extraPaths": ["src/", "src/lib/"]
+	"python.analysis.extraPaths": ["src/", "src/lib/"],
+	"eslint.validate": ["javascript", "typescript", "svelte"],
+	"eslint.experimental.useFlatConfig": true,
+	"eslint.workingDirectories": ["webgui/"]
 }

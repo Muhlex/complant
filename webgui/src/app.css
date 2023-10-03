@@ -1,0 +1,50 @@
+* {
+	box-sizing: border-box;
+}
+
+:root {
+	font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui,
+		helvetica neue, helvetica, Cantarell, Ubuntu, roboto, noto, arial, sans-serif;
+	font-weight: 400;
+	line-height: 1.5;
+
+	color: white;
+	background-color: #242424;
+
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	-webkit-text-size-adjust: 100%;
+}
+
+html {
+	min-height: 100vh;
+	min-height: stretch;
+	min-height: -webkit-fill-available;
+}
+
+html, body, #app {
+	flex-grow: 1;
+
+	display: flex;
+	flex-direction: column;
+}
+
+body {
+	margin: 0;
+}
+
+button, select {
+	font: inherit;
+}
+
+optgroup {
+	font-style: normal;
+	font-weight: bold;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	margin: 0;
+	line-height: 1;
+}
