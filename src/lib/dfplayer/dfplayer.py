@@ -36,7 +36,7 @@ class DFPlayer:
 	EQ_CLASSIC = 4
 	EQ_BASS    = 5
 
-	def __init__(self, uart_id: int, tx = None, rx = None, retries = 9):
+	def __init__(self, uart_id: int, tx = None, rx = None, retries = 7):
 		kwargs = {};
 		if tx is not None: kwargs["tx"] = tx
 		if rx is not None: kwargs["rx"] = rx

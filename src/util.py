@@ -1,3 +1,5 @@
+from os import stat
+
 def median(data):
 	data = sorted(data)
 	n = len(data)
@@ -12,3 +14,10 @@ def create_remap(in_min: int | float, in_max: int | float, out_min: int | float,
 	def fn(value):
 		return (value - in_min) * scale_factor + out_min
 	return fn
+
+def path_exists(path: str):
+	try:
+		stat(path)
+		return True
+	except OSError:
+		return False
