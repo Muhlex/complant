@@ -368,15 +368,7 @@ async def restful_resource_handler(req, resp, param=None):
         elif res is None:
             raise Exception('Result expected')
         # Send response
-        if type(res) is dict:
-            res_str = json.dumps(res)
-        else:
-            res_str = res
-        resp.add_header('Content-Type', 'application/json')
-        resp.add_header('Content-Length', str(len(res_str)))
-        resp.add_access_control_headers()
-        await resp._send_headers()
-        await resp.send(res_str)
+        await resp.send_json(res)
 
 
 class Webserver:
