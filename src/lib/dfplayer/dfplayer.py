@@ -18,13 +18,11 @@ class DFPlayerResponseError(DFPlayerError):
 class DFPlayerUnexpectedResponseError(DFPlayerError):
 	pass
 
+START_BIT = 0x7E
+END_BIT   = 0xEF
+VERSION   = 0xFF
+
 class DFPlayer:
-	debug = True
-
-	_START_BIT = 0x7E
-	_END_BIT   = 0xEF
-	_VERSION   = 0xFF
-
 	STATE_STOPPED = 0
 	STATE_PLAYING = 1
 	STATE_PAUSED  = 2
@@ -36,7 +34,7 @@ class DFPlayer:
 	EQ_CLASSIC = 4
 	EQ_BASS    = 5
 
-	def __init__(self, uart_id: int, tx = None, rx = None, retries = 7):
+	def __init__(self, uart_id: int, tx = None, rx = None, retries = 7, debug = False):
 		kwargs = {};
 		if tx is not None: kwargs["tx"] = tx
 		if rx is not None: kwargs["rx"] = rx
@@ -51,8 +49,8 @@ class DFPlayer:
 		self.retries = retries
 
 		self._buffer_send = bytearray([
-			DFPlayer._START_BIT,
-			DFPlayer._VERSION,
+			START_BIT,
+			VERSION,
 			6, # number of byes w/o start, end, verification
 			0, # command
 			1, # whether to use ACK
@@ -60,9 +58,11 @@ class DFPlayer:
 			0, # param2
 			0, # checksum
 			0, # checksum
-			DFPlayer._END_BIT
+			END_BIT
 		])
 		self._buffer_read = bytearray(10)
+
+		self.debug = debug
 
 	def _log(self, *args, **kwargs):
 		print("[DF]", *args, **kwargs)
@@ -87,12 +87,12 @@ class DFPlayer:
 		bytes[7], bytes[8] = self._uint16_to_bytes(self._get_checksum(bytes))
 
 		for retries in reversed(range(self.retries + 1)):
-			if DFPlayer.debug:
+			if self.debug:
 				self._log("<-- Sending CMD", hex(cmd))
 
 			while count := self._uart.any():
 				self._uart.read(count)
-				if DFPlayer.debug:
+				if self.debug:
 					self._log("Discarded", count, "bytes from RX")
 				await sleep_ms(0)
 			self._stream.write(bytes)
@@ -103,7 +103,7 @@ class DFPlayer:
 			except DFPlayerError as error:
 				if retries == 0:
 					raise error
-				if DFPlayer.debug and retries > 0:
+				if self.debug and retries > 0:
 					self._log("ERROR:", error)
 					self._log("Retrying command...")
 				continue
@@ -111,7 +111,7 @@ class DFPlayer:
 			command = self._buffer_read[3]
 			if command != 0x41: # ACK
 				raise DFPlayerUnexpectedResponseError("ACK expected, instead received: " + hex(command))
-			if DFPlayer.debug:
+			if self.debug:
 				self._log("--> ACKed CMD", hex(cmd) + "\n")
 			break
 
@@ -139,7 +139,7 @@ class DFPlayer:
 			read_count = await wait_for_ms(self._stream.readinto(bytes), timeout)
 		except TimeoutError:
 			raise DFPlayerUnavailableError("Response timed out")
-		if read_count != 10 or bytes[0] != DFPlayer._START_BIT or bytes[1] != DFPlayer._VERSION or bytes[9] != DFPlayer._END_BIT:
+		if read_count != 10 or bytes[0] != START_BIT or bytes[1] != VERSION or bytes[9] != END_BIT:
 			raise DFPlayerUnavailableError("Malformed response");
 		if (bytes[7], bytes[8]) != self._uint16_to_bytes(self._get_checksum(bytes)):
 			raise DFPlayerUnavailableError("Malformed response: Invalid checksum");
@@ -156,7 +156,7 @@ class DFPlayer:
 				raise DFPlayerResponseError("Unknown error " + err_code_readable)
 		if (0xF0 & bytes[3]) == 0x30: # event notification
 			# ignore them for now
-			if DFPlayer.debug:
+			if self.debug:
 				self._log("Received event notification (" + hex(bytes[3]) + "), re-reading...")
 			return await self._read()
 
