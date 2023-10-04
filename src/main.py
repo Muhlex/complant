@@ -1,4 +1,7 @@
-import os # fixes pymakr not being able to upload after error
+from complant.api import API
+from complant.webserver import Webserver
+from complant.config import Config
+from complant.wifi import init as initWiFi
 
 from uasyncio import get_event_loop, run, create_task, sleep_ms
 from machine import Pin
@@ -6,10 +9,6 @@ from neopixel import NeoPixel
 
 from moisture import MoistureSensor
 from dfplayer import DFPlayer
-
-from complant.config import Config
-from complant.wifi import init as initWiFi
-from complant.api import API
 
 config = Config("data/config.json")
 
@@ -37,7 +36,10 @@ async def main():
 	create_task(demo_pixels(io.pixels))
 
 	await initWiFi(config)
-	API(config=config, audio=io.audio).init()
+
+	api = API(config=config, audio=io.audio)
+	webserver = Webserver(api, root="webgui/")
+	create_task(webserver.init())
 
 	volume = config.values["volume"]
 	print("Setting volume to", volume)
