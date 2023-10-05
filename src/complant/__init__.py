@@ -1,6 +1,1 @@
-from os import mkdir
-
-try:
-	mkdir("data")
-except:
-	pass
+from .init import io, models
