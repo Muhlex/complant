@@ -10,6 +10,7 @@ class Config:
 			"volume": 15,
 			"brightness": 2,
 			"wifi": {
+				"ssid": "Complant",
 				"key": "complant"
 			}
 		}

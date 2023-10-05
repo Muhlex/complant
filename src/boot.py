@@ -1,1 +1,2 @@
-# boot.py -- run on boot-up
+import os # for pymakr upload
+import microdot, microdot_asyncio # RAM usage optimization
