@@ -1,3 +1,6 @@
+try: from typing import Literal
+except ImportError: pass
+
 from urequests_asyncio import get, head, post, put, delete
 from microdot import HTTPException
 
@@ -5,10 +8,11 @@ class Plant:
 	def __init__(self, ip: str):
 		self.ip = ip
 		self.api = API(self)
+		self.type: Literal["host", "client"] = "host"
 
 	async def heartbeat(self):
 		try:
-			await self.api.get("/heartbeat")
+			await self.api.get(self.type + "/heartbeat")
 			return True
 		except:
 			return False

@@ -12,7 +12,7 @@ class Webserver:
 		self._app = app
 		self._task: Task | None = None
 
-		app.mount(api.app, url_prefix="/api")
+		app.mount(api.app, "/api")
 
 		@app.route("/")
 		async def _(_):
@@ -29,23 +29,23 @@ class Webserver:
 
 		@app.errorhandler(400)
 		def _(_):
-			return {"error": "Bad request"}, 400
+			return {"success": False, "error": "Bad request"}, 400
 
 		@app.errorhandler(404)
 		def _(_):
-			return {"error": "Not found"}, 404
+			return {"success": False, "error": "Not found"}, 404
 
 		@app.errorhandler(405)
 		def _(_):
-			return {"error": "Method not allowed"}, 405
+			return {"success": False, "error": "Method not allowed"}, 405
 
 		@app.errorhandler(413)
 		def _(_):
-			return {"error": "Payload too large"}, 413
+			return {"success": False, "error": "Payload too large"}, 413
 
 		@app.errorhandler(500)
 		def _(_):
-			return {"error": "Internal server error"}, 500
+			return {"success": False, "error": "Internal server error"}, 500
 
 		CORS(app, allowed_origins="*", allow_credentials=True)
 
