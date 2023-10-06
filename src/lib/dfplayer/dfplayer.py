@@ -1,7 +1,5 @@
-try:
-	from typing import Literal, overload
-except ImportError:
-	pass
+try: from typing import Literal, overload
+except ImportError: pass
 
 from micropython import const
 
