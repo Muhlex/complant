@@ -1,28 +1,10 @@
-from complant.api import API
-from complant.webserver import Webserver
-from complant.config import Config
-from complant.wifi import init as initWiFi
+from complant import io, models
 
-from uasyncio import get_event_loop, run, create_task, sleep_ms
-from machine import Pin
+from uasyncio import run, create_task, sleep_ms
 from neopixel import NeoPixel
 
-from moisture import MoistureSensor
-from dfplayer import DFPlayer
-
-config = Config("data/config.json")
-
-# "Abuse" static classes as namespaces to organize our stuff:
-class io:
-	led = Pin(2, Pin.OUT)
-	pixels = NeoPixel(Pin(23, Pin.OUT), n=24)
-	audio = DFPlayer(2)
-
-	motion = Pin(21, Pin.IN)
-	moisture = MoistureSensor(Pin(34, Pin.IN))
-
-
 async def demo_pixels(np: NeoPixel):
+	print("Running NeoPixel Demo.")
 	n = np.n
 	while True:
 		for i in range(n):
@@ -34,19 +16,16 @@ async def demo_pixels(np: NeoPixel):
 
 async def main():
 	create_task(demo_pixels(io.pixels))
+	await sleep_ms(0)
 
-	await initWiFi(config)
+	await models.wifi.init()
 
-	api = API(config=config, audio=io.audio)
-	webserver = Webserver(api, root="webgui/")
-	create_task(webserver.init())
-
-	volume = config.values["volume"]
+	volume = models.config.values["volume"]
 	print("Setting volume to", volume)
-	await io.audio.volume(volume)
-	print("DFPlayer volume reports:", await io.audio.volume())
+	await io.dfplayer.volume(volume)
+	print("DFPlayer volume reports:", await io.dfplayer.volume())
 
-	await io.audio.play_root(2)
+	await io.dfplayer.play_root(2)
 
 	print("Entering main loop")
 	while True:
@@ -60,11 +39,11 @@ except KeyboardInterrupt:
 
 finally:
 	print("Cleaning up...")
-	get_event_loop().close()
-	io.led.off()
-	io.pixels.fill((0, 0, 0))
-	io.pixels.write()
 	try:
-		run(io.audio.reset())
+		io.led.off()
+		io.pixels.fill((0, 0, 0))
+		io.pixels.write()
+		models.wifi.reset()
+		create_task(io.dfplayer.reset())
 	except Exception as error:
-		print("DF Player couldn't reset:", error)
+		print("Error occured on cleanup:\n", error)
