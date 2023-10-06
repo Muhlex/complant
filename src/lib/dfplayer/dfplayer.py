@@ -1,7 +1,7 @@
-try:
-	from typing import Literal, overload
-except ImportError:
-	pass
+try: from typing import Literal, overload
+except ImportError: pass
+
+from micropython import const
 
 from uasyncio import sleep_ms, TimeoutError
 from uasyncio.funcs import wait_for_ms
@@ -18,9 +18,9 @@ class DFPlayerResponseError(DFPlayerError):
 class DFPlayerUnexpectedResponseError(DFPlayerError):
 	pass
 
-START_BIT = 0x7E
-END_BIT   = 0xEF
-VERSION   = 0xFF
+START_BIT = const(0x7E)
+END_BIT   = const(0xEF)
+VERSION   = const(0xFF)
 
 class DFPlayer:
 	STATE_STOPPED = 0
