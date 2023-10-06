@@ -2,6 +2,7 @@ from micropython import const
 from uasyncio import create_task, sleep, sleep_ms
 from network import WLAN, STA_IF, AP_IF, AUTH_WPA_WPA2_PSK, hostname
 
+from network_asyncio import AsyncWLAN
 from .plant import Plant
 
 HOST_IP = const("192.168.6.1")
@@ -11,6 +12,7 @@ class WiFi():
 		hostname("complant")
 		self._sta = WLAN(STA_IF)
 		self._ap = WLAN(AP_IF)
+		self._async = AsyncWLAN()
 		self.is_client = False
 		self.is_host = False
 
@@ -35,6 +37,8 @@ class WiFi():
 			print("Terminated client WiFi station for this Complant.")
 
 		ap.active(True)
+		# This blocks for quite a while, but seems impossible to work around
+		# (using another thread doesn't work):
 		ap.config(ssid=wifi_config["ssid"], key=wifi_config["key"], security=AUTH_WPA_WPA2_PSK)
 		ap.ifconfig((HOST_IP, "255.255.255.0", HOST_IP, "1.1.1.1"))
 
@@ -54,7 +58,7 @@ class WiFi():
 
 		print("Scanning for Complant host network...")
 		sta.active(True)
-		networks = sta.scan() # TODO: make this non-blocking
+		networks = await self._async.scan(sta)
 		if not any(network[0].decode("UTF-8") == wifi_config["ssid"] for network in networks):
 			print("No Complant host network available.")
 			sta.active(False)
