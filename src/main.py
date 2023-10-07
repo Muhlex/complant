@@ -1,26 +1,18 @@
 from complant import io, models
 
 from uasyncio import run, create_task, sleep_ms
-from neopixel import NeoPixel
-
-async def demo_pixels(np: NeoPixel):
-	print("Running NeoPixel Demo.")
-	n = np.n
-	while True:
-		for i in range(n):
-			np.fill((1, 1, 1))
-			np[i % n] = (0, 0, 0)
-			np[(i + 1) % n] = (0, 0, 0)
-			np.write()
-			await sleep_ms(60)
 
 async def main():
-	create_task(demo_pixels(io.pixels))
-	await sleep_ms(0)
+	models.ledring.transition(600)
+	models.ledring.circle(models.ledring.COLOR_PRIMARY, gap=io.pixels.n - 2, interval=80)
+
+	models.moisture.init()
 
 	await models.wifi.init()
+	models.ledring.transition()
+	models.ledring.static(models.ledring.COLOR_MOISTURE)
 
-	volume = models.config.values["volume"]
+	volume = models.config["volume"]
 	print("Setting volume to", volume)
 	await io.dfplayer.volume(volume)
 	print("DFPlayer volume reports:", await io.dfplayer.volume())

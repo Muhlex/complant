@@ -34,7 +34,7 @@ class Plants:
 	async def update_clients(self):
 		if len(self.clients) == 0:
 			return
-		clients_alive: list[bool] = await gather(*map(lambda client: client.heartbeat(), self.clients))
+		clients_alive: list[bool] = await gather(*tuple(client.heartbeat() for client in self.clients))
 		for i, alive in enumerate(clients_alive):
 			if not alive:
 				print("Lost Complant client {} heartbeat, removing them.".format(self.clients[i].ip))
