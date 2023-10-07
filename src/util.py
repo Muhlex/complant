@@ -9,9 +9,12 @@ def median(data):
 		i = n // 2
 		return (data[i - 1] + data[i]) / 2
 
+def remap(value: int | float, in_min: int | float, in_max: int | float, out_min: int | float, out_max: int | float):
+	return (value - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
+
 def create_remap(in_min: int | float, in_max: int | float, out_min: int | float, out_max: int | float):
 	scale_factor = float(out_max - out_min) / float(in_max - in_min)
-	def fn(value):
+	def fn(value: int | float):
 		return (value - in_min) * scale_factor + out_min
 	return fn
 
