@@ -7,8 +7,10 @@ class Config:
 	def __init__(self, path: str):
 		self._path = path
 		self.values = { # default values
+			"name": "Unnamed Complant",
+			"moisture": 0.3,
 			"volume": 15,
-			"brightness": 2,
+			"brightness": 0.1,
 			"wifi": {
 				"ssid": "Complant",
 				"key": "complant"
@@ -29,3 +31,9 @@ class Config:
 		file: StringIO = open(self._path, "r")
 		self.values = load(file)
 		file.close()
+
+	def __getitem__(self, key):
+		return self.values[key]
+
+	def __setitem__(self, key, value):
+		self.values[key] = value

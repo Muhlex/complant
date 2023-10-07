@@ -20,7 +20,7 @@ class API:
 		@root.get("/volume")
 		async def _(_):
 			from .. import models
-			return { "value": models.config.values["volume"] }
+			return { "value": models.config["volume"] }
 
 		@root.post("/volume")
 		async def _(request: Request):
@@ -28,7 +28,7 @@ class API:
 			try:
 				volume = request.json["value"]
 				await models.audio.volume(volume)
-				models.config.values["volume"] = volume
+				models.config["volume"] = volume
 				models.config.save()
 				return { "success": True }
 			except Exception as error:
