@@ -9,6 +9,8 @@ from .config import Config
 from .wifi import WiFi
 from .webserver import API, Webserver
 from .plants import Plants
+from .ledring import LEDRing
+from .moisture import Moisture
 
 try: mkdir("data")
 except: pass
@@ -21,16 +23,17 @@ class IO:
 
 		self.motion = Pin(21, Pin.IN)
 		self.moisture = MoistureSensor(Pin(34, Pin.IN))
+io = IO()
 
 class Models:
 	def __init__(self):
 		self.config = Config("data/config.json")
 		self.wifi = WiFi()
-
 		self.api = API()
 		self.webserver = Webserver(api=self.api, root="webgui/")
-
 		self.plants = Plants()
 
-io = IO()
+		self.ledring = LEDRing(io.pixels)
+
+		self.moisture = Moisture(io.moisture)
 models = Models()

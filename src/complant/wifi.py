@@ -26,7 +26,7 @@ class WiFi():
 		from . import models
 		ap = self._ap
 		sta = self._sta
-		wifi_config = models.config.values["wifi"]
+		wifi_config = models.config["wifi"]
 
 		self.is_host = True
 
@@ -54,7 +54,7 @@ class WiFi():
 		from . import models
 		sta = self._sta
 		ap = self._ap
-		wifi_config = models.config.values["wifi"]
+		wifi_config = models.config["wifi"]
 
 		print("Scanning for Complant host network...")
 		sta.active(True)
