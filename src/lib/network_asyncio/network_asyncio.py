@@ -28,5 +28,4 @@ class AsyncWLAN():
 		self._wlan = wlan
 		self._scan_start_lock.release()
 		await self._scan_complete_flag.wait()
-		self._scan_complete_flag.clear()
 		return self._scan_results

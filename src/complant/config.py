@@ -11,6 +11,10 @@ class Config:
 			"moisture": 0.3,
 			"volume": 15,
 			"brightness": 0.1,
+			"periods": {
+				"light": 10,
+				"speech": 20,
+			},
 			"wifi": {
 				"ssid": "Complant",
 				"key": "complant"
