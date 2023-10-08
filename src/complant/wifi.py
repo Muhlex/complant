@@ -23,12 +23,13 @@ class WiFi():
 		create_task(self._watch_status())
 
 	async def _init_host(self):
-		from . import models
+		from . import models, io
 		ap = self._ap
 		sta = self._sta
 		wifi_config = models.config["wifi"]
 
 		self.is_host = True
+		io.led.on()
 
 		if self.is_client:
 			self.is_client = False
@@ -51,7 +52,7 @@ class WiFi():
 		return True
 
 	async def _init_client(self):
-		from . import models
+		from . import models, io
 		sta = self._sta
 		ap = self._ap
 		wifi_config = models.config["wifi"]
@@ -91,6 +92,7 @@ class WiFi():
 
 		if self.is_host:
 			self.is_host = False
+			io.led.off()
 			models.plants.clear_clients()
 			ap.active(False)
 			print("Terminated host WiFi access point for this Complant.")

@@ -3,14 +3,15 @@ from complant import io, models
 from uasyncio import run, create_task, sleep_ms
 
 async def main():
-	models.ledring.transition(600)
-	models.ledring.circle(models.ledring.COLOR_PRIMARY, gap=io.pixels.n - 2, interval=80)
-
+	models.lights.init()
 	models.moisture.init()
+	models.motion.init()
+
+	models.lights.on_boot()
 
 	await models.wifi.init()
-	models.ledring.transition()
-	models.ledring.static(models.ledring.COLOR_MOISTURE)
+
+	models.lights.on_idle()
 
 	volume = models.config["volume"]
 	print("Setting volume to", volume)
