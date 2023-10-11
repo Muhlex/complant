@@ -1,4 +1,4 @@
-try: from typing import Callable, Awaitable
+try: from typing import Callable
 except ImportError: pass
 
 from machine import Pin
@@ -6,14 +6,13 @@ from uasyncio import create_task
 from uasyncio.event import ThreadSafeFlag
 
 class MotionSensor:
-	def __init__(self, pin = Pin, on_activate: Callable[[], Awaitable] | None = None):
+	def __init__(self, pin = Pin, on_activate: Callable | None = None):
 		self._pin = pin
 		self._irq_flag = ThreadSafeFlag()
 		self.on_activate = on_activate
 
-		pin.irq(self._isr, trigger=Pin.IRQ_RISING)
-
 	def init(self):
+		self._pin.irq(self._isr, trigger=Pin.IRQ_RISING)
 		create_task(self._wait_activate())
 
 	def _isr(self, _):
@@ -23,4 +22,4 @@ class MotionSensor:
 		while True:
 			await self._irq_flag.wait()
 			if self.on_activate is not None:
-				create_task(self.on_activate())
+				self.on_activate()

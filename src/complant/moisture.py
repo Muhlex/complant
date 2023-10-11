@@ -1,5 +1,5 @@
 from moisture import MoistureSensor
-from uasyncio import create_task, sleep
+from uasyncio import create_task, sleep_ms
 
 class Moisture():
 	def __init__(self, sensor: MoistureSensor):
@@ -9,12 +9,12 @@ class Moisture():
 	def init(self):
 		create_task(self._update())
 
+	@property
+	def dry(self) -> bool:
+		from . import models
+		return self.value < models.config["moisture"]
+
 	async def _update(self):
-		# using mock data for now:
-		self.value = 1.0
 		while True:
-			# self.value = self._sensor.read()
-			value = self.value - 0.05
-			if value < 0.0: value = 1.0
-			self.value = value
-			await sleep(1.5)
+			self.value = await self._sensor.read()
+			await sleep_ms(1000)

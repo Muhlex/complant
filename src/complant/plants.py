@@ -1,24 +1,25 @@
 from uasyncio.funcs import gather
 
-from .plant import Plant
+from .plant import HostPlant, ClientPlant
 
 class Plants:
 	def __init__(self):
-		self.host: Plant | None = None
-		self.clients: list[Plant] = []
-		self.clients_by_ip: dict[str, Plant] = {}
+		self.host: HostPlant | None = None
+		# Important: Client list is only maintained when the plant is the host!
+		self.clients: list[ClientPlant] = []
+		self.clients_by_ip: dict[str, ClientPlant] = {}
 
-	def set_host(self, plant: Plant):
-		plant.type = "host"
+	def all(self) -> list[ClientPlant | HostPlant]:
+		plants = self.clients.copy()
+		if self.host is not None:
+			plants.append(self.host)
+		return plants
+
+	def set_host(self, plant: HostPlant):
 		self.host = plant
 		return self.host
 
-	def clear_host(self):
-		self.host = None
-		return self.host
-
-	def register_client(self, plant: Plant):
-		plant.type = "client"
+	def register_client(self, plant: ClientPlant):
 		self.clients.append(plant)
 		self.clients_by_ip[plant.ip] = plant
 
