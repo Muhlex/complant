@@ -9,6 +9,9 @@ def median(data):
 		i = n // 2
 		return (data[i - 1] + data[i]) / 2
 
+def clamp(value: int | float, min_value: int | float, max_value: int | float):
+	return max(min_value, min(value, max_value))
+
 def remap(value: int | float, in_min: int | float, in_max: int | float, out_min: int | float, out_max: int | float):
 	return (value - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 

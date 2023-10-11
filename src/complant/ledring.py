@@ -91,7 +91,7 @@ class LEDRing():
 				await sleep_ms(300)
 		self._set_anim(anim)
 
-	def circle(self, get_color: Callable[..., tuple[int, ...]], gap = 5, interval = 50):
+	def circle(self, get_color: Callable[..., tuple[int, ...]], gap = 5, interval = 40):
 		frame = self._anim_frame
 		n = self._anim_frame.n
 		gap = n + gap if gap < 0 else gap

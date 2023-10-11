@@ -7,45 +7,50 @@ from .ledring import LEDRing
 class Lights:
 	def __init__(self, ledring: LEDRing):
 		self._leds = ledring
-		self._standby_timer = Timer(0)
-		self._standby_flag = ThreadSafeFlag()
-		self._standby_active = False
+		self._timeout_timer = Timer(0)
+		self._timeout_flag = ThreadSafeFlag()
+		self._timeout_active = False
 
-	def reset_standby(self):
+	def reset_timeout(self):
 		from . import models
-		self._standby_timer.init(mode=Timer.ONE_SHOT,
+		self._timeout_timer.init(mode=Timer.ONE_SHOT,
 		                         period=models.config["periods"]["light"] * 1000,
-		                         callback=lambda _: self._standby_flag.set())
-		if self._standby_active:
-			self.on_idle()
-		self._standby_active = False
+		                         callback=lambda _: self._timeout_flag.set())
+		if self._timeout_active:
+			self._timeout_active = False
+			self.idle()
+		else:
+			self._timeout_active = False
 
 	def init(self):
-		create_task(self._wait_standby())
-		self.reset_standby()
+		create_task(self.wait_timeout())
+		self.reset_timeout()
 
-	async def _wait_standby(self):
+	async def wait_timeout(self):
 		while True:
-			await self._standby_flag.wait()
-			self._on_standby()
+			await self._timeout_flag.wait()
+			self._timeout()
 
-	def _on_standby(self):
-		self._standby_active = True
+	def _timeout(self):
+		self._timeout_active = True
 		leds = self._leds
 		leds.transition(3000)
 		leds.clear()
 
-	def on_boot(self):
+	def boot(self):
+		if self._timeout_active: return
 		leds = self._leds
 		leds.transition(600)
 		leds.circle(leds.COLOR_PRIMARY, gap=-2, interval=80)
 
-	def on_idle(self):
+	def idle(self):
+		if self._timeout_active: return
 		leds = self._leds
 		leds.transition()
 		leds.static(leds.COLOR_MOISTURE)
 
-	def on_talk(self):
+	def talk(self):
+		if self._timeout_active: return
 		leds = self._leds
 		leds.transition(600)
 		leds.circle(leds.COLOR_MOISTURE)

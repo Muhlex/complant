@@ -13,8 +13,9 @@ class Config:
 			"brightness": 0.1,
 			"periods": {
 				"light": 10,
-				"speech": 20,
+				"conversation": 20,
 			},
+			"character": 0,
 			"wifi": {
 				"ssid": "Complant",
 				"key": "complant"

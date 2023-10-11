@@ -24,6 +24,10 @@ _END_BIT   = const(0xEF)
 _VERSION   = const(0xFF)
 
 class DFPlayer:
+	FOLDER_ROOT = -1
+	FOLDER_MP3 = -2
+	FOLDER_ADVERT = -3
+
 	STATE_STOPPED = 0
 	STATE_PLAYING = 1
 	STATE_PAUSED  = 2
@@ -40,6 +44,7 @@ class DFPlayer:
 	EVENT_DONE_USB    = 0x3c
 	EVENT_DONE_SDCARD = 0x3d
 	EVENT_DONE_FLASH  = 0x3e
+	EVENT_READY       = 0x3f
 
 	def __init__(self, uart_id: int, tx = None, rx = None, retries = 7, debug = False):
 		kwargs = {};
@@ -69,10 +74,13 @@ class DFPlayer:
 		])
 		self._buffer_read = bytearray(10)
 
-		self._event_reader: Task = create_task(self._read_events())
+		self._reader_idle: Task = create_task(self._read_idle())
 		class Events():
 			def __init__(self):
-				self.done = Event()
+				self.track_done = Event()
+				self.track_done.set()
+				self.advert_done = Event()
+				self.advert_done.set()
 		self._events = Events()
 
 		self.debug = debug
@@ -80,28 +88,34 @@ class DFPlayer:
 	def _log(self, *args, **kwargs):
 		print("[DF]", *args, **kwargs)
 
-	async def _read_events(self):
+	async def _read_idle(self):
 		while True:
 			try:
 				await self._read(timeout=None)
+				self._log("Unexpected data received:", [hex(byte) for byte in self._buffer_read])
 			except DFPlayerError as error:
-				self._log("Player error received:", error)
+				self._log("Unexpected error received:", error)
 
 	def _handle_event(self, event: int):
-		if event == DFPlayer.EVENT_DONE_USB or event == DFPlayer.EVENT_DONE_SDCARD or event == DFPlayer.EVENT_DONE_FLASH:
-			self._events.done.set()
 		# TODO: Handle in-/eject events
+		if event == DFPlayer.EVENT_DONE_USB or event == DFPlayer.EVENT_DONE_SDCARD or event == DFPlayer.EVENT_DONE_FLASH:
+			if self._events.advert_done.is_set():
+				print("setting track done")
+				self._events.track_done.set()
+			else:
+				print("setting advert done")
+				self._events.advert_done.set()
 
 	async def _require_lock(self, coro: Awaitable):
 		try:
 			await self._lock.acquire()
-			self._event_reader.cancel()
+			self._reader_idle.cancel()
 			return await coro
 		except Exception as error:
 			raise error
 		finally:
 			self._lock.release()
-			self._event_reader = create_task(self._read_events())
+			self._reader_idle = create_task(self._read_idle())
 
 	async def send_cmd(self, *args, **kwargs):
 		return await self._require_lock(self._send_cmd(*args, **kwargs))
@@ -195,18 +209,28 @@ class DFPlayer:
 	def _uint16_to_bytes(self, value: int):
 		return (value >> 8 & 0xFF), (value & 0xFF)
 
-	async def play_root(self, file: int):
-		await self.send_cmd(0x03, file)
-		self._events.done.clear()
+	async def play(self, folder: int, file: int):
+		if folder == DFPlayer.FOLDER_ADVERT:
+			self._events.advert_done.set()
+			await sleep_ms(0)
+			self._events.advert_done.clear()
+			await self.send_cmd(0x13, file)
+			return
 
-	async def play(self, folder: int | Literal["mp3"] | Literal["advert"], file: int):
-		if folder == "mp3":
-			await self.send_cmd(0x12, file) # play from "MP3" folder
-		elif folder == "advert":
-			await self.send_cmd(0x13, file) # play from "ADVERT" folder
-		else:
-			await self.send_cmd(0x0F, folder, file) # play from numbered folder
-		self._events.done.clear()
+		self._events.advert_done.set() # playing regular tracks cancels running adverts
+		self._events.track_done.set()
+		await sleep_ms(0)
+		self._events.track_done.clear()
+
+		if folder == DFPlayer.FOLDER_ROOT:
+			await self.send_cmd(0x03, file)
+		elif folder == DFPlayer.FOLDER_MP3:
+			await self.send_cmd(0x12, file)
+		else: # numbered folder
+			await self.send_cmd(0x0F, folder, file)
+
+	async def play_advert(self, file: int):
+		await self.play(DFPlayer.FOLDER_ADVERT, file)
 
 	async def resume(self):
 		# DFPlayer seems to take long to process resuming
@@ -231,6 +255,11 @@ class DFPlayer:
 		bytes = await self.send_query(0x42)
 		return bytes[6]
 
+	async def playing(self):
+		# TODO: Add busy pin support
+		state = await self.state()
+		return state == DFPlayer.STATE_PLAYING
+
 	async def volume(self, volume: int | None = None):
 		if volume is None:
 			bytes = await self.send_query(0x43)
@@ -254,36 +283,39 @@ class DFPlayer:
 	async def reset(self):
 		await self.send_cmd(0x0C, timeout=250)
 
-	async def wait_done(self):
-		await self._events.done.wait()
+	async def wait_track(self):
+		await self._events.track_done.wait()
+
+	async def wait_advert(self):
+		await self._events.advert_done.wait()
 
 	try:
 		@overload
-		async def send_cmd(self, cmd: int) -> None: ...
+		async def send_cmd(self, cmd: int) -> None: pass
 		@overload
-		async def send_cmd(self, cmd: int, param1: int) -> None: ...
+		async def send_cmd(self, cmd: int, param1: int) -> None: pass
 		@overload
-		async def send_cmd(self, cmd: int, param1: int, param2: int) -> None: ...
+		async def send_cmd(self, cmd: int, param1: int, param2: int) -> None: pass
 		@overload
-		async def send_cmd(self, cmd: int, param1: int, param2: int, timeout: int) -> None: ...
+		async def send_cmd(self, cmd: int, param1: int, param2: int, timeout: int) -> None: pass
 
 		@overload
-		async def send_query(self, cmd: int) -> bytearray: ...
+		async def send_query(self, cmd: int) -> bytearray: pass
 		@overload
-		async def send_query(self, cmd: int, param1: int) -> bytearray: ...
+		async def send_query(self, cmd: int, param1: int) -> bytearray: pass
 		@overload
-		async def send_query(self, cmd: int, param1: int, param2: int) -> bytearray: ...
+		async def send_query(self, cmd: int, param1: int, param2: int) -> bytearray: pass
 		@overload
-		async def send_query(self, cmd: int, param1: int, param2: int, timeout: int) -> bytearray: ...
+		async def send_query(self, cmd: int, param1: int, param2: int, timeout: int) -> bytearray: pass
 
 		@overload
-		async def volume(self) -> int: ...
+		async def volume(self) -> int: pass
 		@overload
-		async def volume(self, volume: int) -> None: ...
+		async def volume(self, volume: int) -> None: pass
 
 		@overload
-		async def eq(self) -> int: ...
+		async def eq(self) -> int: pass
 		@overload
-		async def eq(self, eq: int) -> None: ...
+		async def eq(self, eq: int) -> None: pass
 	except NameError:
 		pass

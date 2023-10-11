@@ -3,7 +3,7 @@ from uasyncio import create_task, sleep, sleep_ms
 from network import WLAN, STA_IF, AP_IF, AUTH_WPA_WPA2_PSK, hostname
 
 from network_asyncio import AsyncWLAN
-from .plant import Plant
+from .plant import HostPlant
 
 HOST_IP = const("192.168.6.1")
 
@@ -13,8 +13,17 @@ class WiFi():
 		self._sta = WLAN(STA_IF)
 		self._ap = WLAN(AP_IF)
 		self._async = AsyncWLAN()
-		self.is_client = False
-		self.is_host = False
+		self.ip: str = HOST_IP
+
+	@property
+	def is_host(self):
+		from . import models
+		return (models.plants.host is not None) and (models.plants.host.ip == self.ip)
+
+	@property
+	def is_client(self):
+		from . import models
+		return (models.plants.host is not None) and (models.plants.host.ip != self.ip)
 
 	async def init(self):
 		if not await self._init_client():
@@ -28,22 +37,21 @@ class WiFi():
 		sta = self._sta
 		wifi_config = models.config["wifi"]
 
-		self.is_host = True
-		io.led.on()
-
 		if self.is_client:
-			self.is_client = False
-			models.plants.clear_host()
 			sta.active(False)
 			print("Terminated client WiFi station for this Complant.")
 
+		models.plants.set_host(HostPlant(ip=HOST_IP))
+
+		io.led.on()
 		ap.active(True)
 		# This blocks for quite a while, but seems impossible to work around
 		# (using another thread doesn't work):
 		ap.config(ssid=wifi_config["ssid"], key=wifi_config["key"], security=AUTH_WPA_WPA2_PSK)
 		ap.ifconfig((HOST_IP, "255.255.255.0", HOST_IP, "1.1.1.1"))
 
-		models.webserver.init(HOST_IP)
+		self.ip = HOST_IP
+		models.webserver.init(self.ip)
 
 		while ap.active() == False:
 			await sleep_ms(50)
@@ -77,25 +85,24 @@ class WiFi():
 				return False
 
 		print("Connected. Registering this Complant client with host...")
-		host = Plant(ip=HOST_IP)
+		host = HostPlant(ip=HOST_IP)
 		try:
-			await host.api.put("/host/register", {})
+			await host.api.put("/host/register")
 		except Exception as error:
 			print("Registration failed. Error:", error)
 			sta.active(False)
 			return False
-
-		self.is_client = True
-		models.plants.set_host(host)
-
-		models.webserver.init(sta.ifconfig()[0])
+		print("Registered with host.")
 
 		if self.is_host:
-			self.is_host = False
-			io.led.off()
 			models.plants.clear_clients()
 			ap.active(False)
+			io.led.off()
 			print("Terminated host WiFi access point for this Complant.")
+
+		models.plants.set_host(host)
+		self.ip = sta.ifconfig()[0]
+		models.webserver.init(self.ip)
 
 		print("Successfully initialized as Complant client.")
 		return True
