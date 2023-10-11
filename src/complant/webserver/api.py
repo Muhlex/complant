@@ -1,6 +1,6 @@
 from microdot_asyncio import Microdot, Request, HTTPException
 
-from ..plant import Plant
+from ..plant import ClientPlant
 
 class API:
 	def __init__(self):
@@ -17,6 +17,21 @@ class API:
 			from .. import models
 			return models.config.values
 
+		@root.get("/dry")
+		async def _(_):
+			from .. import models
+			return { "value": models.moisture.dry }
+
+		@root.get("/trait")
+		async def _(_):
+			from .. import models
+			return { "value": models.characters.active.trait }
+
+		@root.post("/talk")
+		async def _(request: Request):
+			from .. import models
+			await models.characters.active.talk(request.json["topic"], *request.json["sample"])
+
 		@root.get("/volume")
 		async def _(_):
 			from .. import models
@@ -25,14 +40,8 @@ class API:
 		@root.post("/volume")
 		async def _(request: Request):
 			from .. import models
-			try:
-				volume = request.json["value"]
-				await models.audio.volume(volume)
-				models.config["volume"] = volume
-				models.config.save()
-				return { "success": True }
-			except Exception as error:
-				return { "success": False, "error": str(error) }, 500
+			volume = request.json["value"]
+			await models.audio.set_volume(volume)
 
 		@host.before_request
 		async def verify_is_host(request: Request):
@@ -40,7 +49,7 @@ class API:
 				return
 			from .. import models
 			if not models.wifi.is_host:
-				return { "success": False, "error": "Not configured as a Complant host." }, 400
+				return { "error": "Not configured as a Complant host." }, 400
 
 		@client.before_request
 		async def verify_is_client(request: Request):
@@ -48,21 +57,21 @@ class API:
 				return
 			from .. import models
 			if not models.wifi.is_client:
-				return { "success": False, "error": "Not configured as a Complant client." }, 400
+				return { "error": "Not configured as a Complant client." }, 400
 
 		def verify_is_known_client(request: Request):
 			from .. import models
 			if not request.client_addr[0] in models.plants.clients_by_ip:
-				raise HTTPException(401, { "success": False, "error": "Unrecognized Complant client." })
+				raise HTTPException(401, { "error": "Unrecognized Complant client." })
 
 		@host.get("/heartbeat")
 		async def _(request: Request):
 			verify_is_known_client(request)
-			return { "success": True }
+			pass
 
 		@client.get("/heartbeat")
 		async def _(_):
-			return { "success": True }
+			pass
 
 		@host.put("/register")
 		async def _(request: Request):
@@ -71,9 +80,14 @@ class API:
 			if ip in models.plants.clients_by_ip:
 				print("Ignoring registration of already registered Complant client.")
 			else:
-				models.plants.register_client(Plant(ip=ip))
-				print("Client {} registered.".format(ip))
-			return { "success": True }
+				models.plants.register_client(ClientPlant(ip=ip))
+				print("Client", ip, "registered.")
+
+		@host.post("/motion")
+		async def _(_):
+			from .. import models
+			models.conversation.trigger()
+
 
 		root.mount(host, "/host")
 		root.mount(client, "/client")

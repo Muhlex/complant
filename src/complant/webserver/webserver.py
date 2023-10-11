@@ -29,23 +29,27 @@ class Webserver:
 
 		@app.errorhandler(400)
 		def _(_):
-			return {"success": False, "error": "Bad request"}, 400
+			return {"error": "Bad request"}, 400
 
 		@app.errorhandler(404)
 		def _(_):
-			return {"success": False, "error": "Not found"}, 404
+			return {"error": "Not found"}, 404
 
 		@app.errorhandler(405)
 		def _(_):
-			return {"success": False, "error": "Method not allowed"}, 405
+			return {"error": "Method not allowed"}, 405
 
 		@app.errorhandler(413)
 		def _(_):
-			return {"success": False, "error": "Payload too large"}, 413
+			return {"error": "Payload too large"}, 413
 
 		@app.errorhandler(500)
 		def _(_):
-			return {"success": False, "error": "Internal server error"}, 500
+			return {"error": "Internal server error"}, 500
+
+		@app.errorhandler(Exception)
+		def _(_, error):
+			return {"error": str(error)}, 500
 
 		CORS(app, allowed_origins="*", allow_credentials=True)
 
