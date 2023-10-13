@@ -48,8 +48,8 @@ class Webserver:
 			return {"error": "Internal server error"}, 500
 
 		@app.errorhandler(Exception)
-		def _(_, error):
-			return {"error": str(error)}, 500
+		def _(_, error: Exception):
+			return {"error": "{}: {}".format(type(error).__name__, str(error))}, 500
 
 		CORS(app, allowed_origins="*", allow_credentials=True)
 

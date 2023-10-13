@@ -52,5 +52,5 @@ class Lights:
 	def talk(self):
 		if self._timeout_active: return
 		leds = self._leds
-		leds.transition(600)
+		leds.transition(300)
 		leds.circle(leds.COLOR_MOISTURE)

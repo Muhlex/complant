@@ -46,6 +46,7 @@ const svelteRules = {
 	...svelte.configs.recommended.rules,
 	...tsRules,
 	"no-inner-declarations": "off",
+	"svelte/html-self-closing": ["warn", "all"],
 };
 
 export default [

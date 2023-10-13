@@ -35,8 +35,9 @@ body {
 	margin: 0;
 }
 
-button, select {
+button, select, input {
 	font: inherit;
+	font-weight: 600;
 }
 
 optgroup {
@@ -46,5 +47,10 @@ optgroup {
 
 h1, h2, h3, h4, h5, h6 {
 	margin: 0;
-	line-height: 1;
+	line-height: 1.15;
 }
+
+h1 { font-size: 2em; }
+h2 { font-size: 1.5em; }
+h3 { font-size: 1.25em; }
+h4, h5, h6 { font-size: 1em; }

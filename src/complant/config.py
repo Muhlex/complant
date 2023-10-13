@@ -8,14 +8,14 @@ class Config:
 		self._path = path
 		self.values = { # default values
 			"name": "Unnamed Complant",
-			"moisture": 0.3,
 			"volume": 15,
-			"brightness": 0.1,
-			"periods": {
-				"light": 10,
-				"conversation": 20,
-			},
+			"brightness": 0.5,
+			"moisture": 0.25,
 			"character": 0,
+			"periods": {
+				"light": 60 * 5,
+				"conversation": 60 * 60,
+			},
 			"wifi": {
 				"ssid": "Complant",
 				"key": "complant"

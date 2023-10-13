@@ -15,6 +15,10 @@ class Conversation:
 	def trigger(self):
 		create_task(self._try_start())
 
+	def reset_timeout(self):
+		self._timer.deinit()
+		self._timeout = False
+
 	async def _try_start(self):
 		if self._active or self._timeout:
 			return

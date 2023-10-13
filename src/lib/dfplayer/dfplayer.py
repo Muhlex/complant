@@ -100,10 +100,8 @@ class DFPlayer:
 		# TODO: Handle in-/eject events
 		if event == DFPlayer.EVENT_DONE_USB or event == DFPlayer.EVENT_DONE_SDCARD or event == DFPlayer.EVENT_DONE_FLASH:
 			if self._events.advert_done.is_set():
-				print("setting track done")
 				self._events.track_done.set()
 			else:
-				print("setting advert done")
 				self._events.advert_done.set()
 
 	async def _require_lock(self, coro: Awaitable):

@@ -17,6 +17,33 @@ class API:
 			from .. import models
 			return models.config.values
 
+		@root.post("/config")
+		async def _(request: Request):
+			from .. import models
+			new_config = request.json
+
+			if (new_config["brightness"] != models.config["brightness"]
+			or new_config["periods"]["light"] != models.config["periods"]["light"]):
+				models.lights.reset_timeout()
+
+			if new_config["periods"]["conversation"] != models.config["periods"]["conversation"]:
+				models.conversation.reset_timeout()
+
+			if new_config["volume"] != models.config["volume"]:
+				await models.audio.set_volume(new_config["volume"])
+
+			models.config.values = new_config
+
+		@root.get("/state")
+		async def _(_):
+			from .. import models
+			return { "moisture": models.moisture.value }
+
+		@root.get("/characters")
+		async def _(_):
+			from .. import models
+			return { "value": [{ "name": c.name, "trait": c.trait } for c in models.characters] }
+
 		@root.get("/dry")
 		async def _(_):
 			from .. import models
@@ -72,6 +99,11 @@ class API:
 		@client.get("/heartbeat")
 		async def _(_):
 			pass
+
+		@host.get("/clients")
+		async def _(_):
+			from .. import models
+			return { "value": list(models.plants.clients_by_ip.keys()) }
 
 		@host.put("/register")
 		async def _(request: Request):

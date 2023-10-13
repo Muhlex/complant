@@ -1,32 +1,20 @@
 <script lang="ts">
-let config: any = {};
-let volume = 0;
+	import { onDestroy } from "svelte";
 
-$: configDisplay = JSON.stringify(config, undefined, 2);
+	import { Plants } from "./models/Plants";
 
-async function logConfig() {
-	const response = await fetch("http://192.168.4.1/api/config");
-	config = await response.json();
-	volume = config.volume;
-}
+	import PlantsComponent from "./lib/Plants.svelte";
+
+	const plants = new Plants();
+	onDestroy(() => plants.release());
 </script>
 
 <main>
-	<h1>🪴 Complant</h1>
-	<button on:click={logConfig}>fetch config</button>
-	<pre>{configDisplay}</pre>
-
-	<label>
-		Volume: {volume}<br>
-		<input type="range" bind:value={volume} min="0" max="30" />
-	</label>
-	<button on:click={async () => await fetch("http://192.168.4.1/api/volume", {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({ value: volume }),
-	})}>
-		Change volume
-	</button>
+	<h1>
+		<span>🪴️</span>
+		<span>Complant</span>
+	</h1>
+	<PlantsComponent {plants} />
 </main>
 
 <style>
@@ -34,10 +22,19 @@ async function logConfig() {
 		width: 100%;
 		max-width: 800px;
 		margin: 0 auto;
-		padding: 1em;
+		padding: 0.5em;
+
+		display: flex;
+		flex-direction: column;
+		gap: 4em;
 	}
 
 	h1 {
-		margin-bottom: 1em;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25em;
+
+		margin-top: 2em;
+		text-align: center;
 	}
 </style>
