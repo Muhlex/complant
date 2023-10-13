@@ -1,7 +1,7 @@
 from machine import Timer
 from uasyncio import create_task
 from uasyncio.funcs import gather
-from random import choice
+from random import choice, randint
 
 from .plant import Plant
 from .characters import Character
@@ -55,11 +55,12 @@ class Conversation:
 		else:
 			print("Starting conversation between", a.ip, "&", b.ip)
 
-		await a.talk(Character.TOPIC_SOIL, Character.MOISTURE_DRY)
+		topic = randint(0, Character.TOPIC_COUNT - 1)
+		await a.talk(topic, Character.MOISTURE_DRY)
 		if b is None: return
 
 		b_moisture = Character.MOISTURE_DRY if (await b.get_dry()) else Character.MOISTURE_WET
-		await b.talk(Character.TOPIC_SOIL, Character.MOISTURE_DRY, b_moisture)
+		await b.talk(topic, Character.MOISTURE_DRY, b_moisture)
 
 		b_trait = await b.get_trait()
-		await a.talk(Character.TOPIC_SOIL, Character.MOISTURE_DRY, b_moisture, b_trait)
+		await a.talk(topic, Character.MOISTURE_DRY, b_moisture, b_trait)

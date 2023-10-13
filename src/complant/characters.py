@@ -3,9 +3,9 @@ _COUNT = const(-1)
 _OFFSET = const(-2)
 
 class Character:
-	TOPIC_SOIL = 0
-	TOPIC_ATTENTION = 1
-	TOPIC_COUNT = 4
+	TOPIC_GENERAL = 0
+	TOPIC_HUMAN = 1
+	TOPIC_COUNT = 1
 
 	MOISTURE_DRY = 0
 	MOISTURE_WET = 1
@@ -35,14 +35,14 @@ class Characters:
 	def __init__(self):
 		C = Character
 		self.characters = [
-			Character("Angela Merkel", trait=C.TRAIT_KIND, samples={
-				C.TOPIC_SOIL: {
-					C.MOISTURE_DRY: { _COUNT: 1, _OFFSET: 0,
-						C.MOISTURE_DRY: { _COUNT: 1, _OFFSET: 20,
+			Character("Donald Trump", trait=C.TRAIT_RUDE, samples={
+				C.TOPIC_GENERAL: {
+					C.MOISTURE_DRY: { _COUNT: 3, _OFFSET: 0,
+						C.MOISTURE_DRY: { _COUNT: 3, _OFFSET: 20,
 							C.TRAIT_KIND: { _COUNT: 1, _OFFSET: 60 },
 							C.TRAIT_RUDE: { _COUNT: 1, _OFFSET: 80 }
 						},
-						C.MOISTURE_WET: { _COUNT: 1, _OFFSET: 40,
+						C.MOISTURE_WET: { _COUNT: 3, _OFFSET: 40,
 							C.TRAIT_KIND: { _COUNT: 1, _OFFSET: 100 },
 							C.TRAIT_RUDE: { _COUNT: 1, _OFFSET: 120 }
 						}
