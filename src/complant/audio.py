@@ -16,11 +16,8 @@ class Audio:
 		await self._df.wait_advert()
 
 	async def set_volume(self, volume: int) -> None:
-		from . import models
 		await self._df.volume(volume)
 		await self._df.play_advert(1)
-		models.config["volume"] = volume
-		models.config.save()
 
 	async def talk(self, topic: int, *sample: int):
 		from . import models

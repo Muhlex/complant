@@ -33,6 +33,7 @@ class API:
 				await models.audio.set_volume(new_config["volume"])
 
 			models.config.values = new_config
+			models.config.save()
 
 		@root.get("/state")
 		async def _(_):
@@ -58,17 +59,6 @@ class API:
 		async def _(request: Request):
 			from .. import models
 			await models.characters.active.talk(request.json["topic"], *request.json["sample"])
-
-		@root.get("/volume")
-		async def _(_):
-			from .. import models
-			return { "value": models.config["volume"] }
-
-		@root.post("/volume")
-		async def _(request: Request):
-			from .. import models
-			volume = request.json["value"]
-			await models.audio.set_volume(volume)
 
 		@host.before_request
 		async def verify_is_host(request: Request):
