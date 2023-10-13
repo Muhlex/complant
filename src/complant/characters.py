@@ -5,7 +5,7 @@ _OFFSET = const(-2)
 class Character:
 	TOPIC_GENERAL = 0
 	TOPIC_HUMAN = 1
-	TOPIC_COUNT = 1
+	TOPIC_COUNT = 2
 
 	MOISTURE_DRY = 0
 	MOISTURE_WET = 1
@@ -45,6 +45,18 @@ class Characters:
 						C.MOISTURE_WET: { _COUNT: 3, _OFFSET: 40,
 							C.TRAIT_KIND: { _COUNT: 1, _OFFSET: 100 },
 							C.TRAIT_RUDE: { _COUNT: 1, _OFFSET: 120 }
+						}
+					}
+				},
+				C.TOPIC_HUMAN: {
+					C.MOISTURE_DRY: { _COUNT: 3, _OFFSET: 0,
+						C.MOISTURE_DRY: { _COUNT: 3, _OFFSET: 20,
+							C.TRAIT_KIND: { _COUNT: 3, _OFFSET: 60 },
+							C.TRAIT_RUDE: { _COUNT: 3, _OFFSET: 80 }
+						},
+						C.MOISTURE_WET: { _COUNT: 3, _OFFSET: 40,
+							C.TRAIT_KIND: { _COUNT: 3, _OFFSET: 100 },
+							C.TRAIT_RUDE: { _COUNT: 3, _OFFSET: 120 }
 						}
 					}
 				}
