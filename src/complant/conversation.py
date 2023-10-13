@@ -24,22 +24,24 @@ class Conversation:
 			return
 
 		from . import models
-		plants = models.plants.all()
-		plants_dry_per_index = await gather(*[plant.get_dry() for plant in plants])
-		plants_dry = [plants[i] for i, dry in enumerate(plants_dry_per_index) if dry]
-		if len(plants_dry) == 0:
-			return
-
-		a = choice(plants_dry)
-		if len(plants) > 1:
-			plants.remove(a)
-			b = choice(plants)
-		else:
-			b = None
-
 		self._active = True
-		await self._start(a, b)
-		self._active = False
+		try:
+			plants = models.plants.all()
+			plants_dry_per_index = await gather(*[plant.get_dry() for plant in plants])
+			plants_dry = [plants[i] for i, dry in enumerate(plants_dry_per_index) if dry]
+			if len(plants_dry) == 0:
+				return
+
+			a = choice(plants_dry)
+			if len(plants) > 1:
+				plants.remove(a)
+				b = choice(plants)
+			else:
+				b = None
+			await self._start(a, b)
+		finally:
+			self._active = False
+
 
 		self._timeout = True
 		def end_timeout(_): self._timeout = False
