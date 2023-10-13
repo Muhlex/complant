@@ -12,6 +12,7 @@ class Config:
 			"brightness": 0.5,
 			"moisture": 0.25,
 			"character": 0,
+			"color": None,
 			"periods": {
 				"light": 60 * 5,
 				"conversation": 60 * 60,

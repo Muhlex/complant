@@ -1,17 +1,32 @@
 <script lang="ts">
 	import type { Plant } from "../models/Plant";
-	import Period from "./Period.svelte";
+
+	import { colord } from "colord";
+
 	import TextEditable from "./TextEditable.svelte";
+	import ColorRange from "./ColorRange.svelte";
+	import Period from "./Period.svelte";
 
 	export let plant: Plant;
 
 	const moisturePresets = [["🌵️ Dry", 0.1], ["🪴️ Regular", 0.25], ["🌷️ Wet", 0.4]] as const;
 	$: dry = ($plant.state && $plant.config && $plant.state.moisture < $plant.config.moisture);
+
+	$: lightColor = (() => {
+		if (!$plant.config?.color) return null;
+		const [r, g, b] = $plant.config.color;
+		return colord({ r, g, b }).toHex();
+	})();
+
+	const updateLightColor = (hex: string) => {
+		const { r, g, b } = colord(hex).rgba;
+		plant.updateConfig(c => ({ ...c, color: [r, g, b] }));
+	};
 </script>
 
 <div class="plant">
 	{#if !($plant.config && $plant.state)}
-		<h3>Loading...</h3>
+		<h3>Loading Plant...</h3>
 	{:else}
 		<h3 class="row">
 			<span class="row" style:flex-grow="1">
@@ -23,7 +38,7 @@
 						value={$plant.config.name}
 						on:blur={({ detail: { currentTarget: { value } } }) => {
 							if (!value) value = "Unnamed Complant";
-							plant.updateConfig(c => ({ ...c, name: value }));
+							plant.updateConfig(c => ({ ...c, name: value.trim() }));
 						}}
 					/>
 					</span>
@@ -145,6 +160,33 @@
 				</div>
 			</label>
 		</div>
+
+		<div class="setting">
+			<label>
+				<h4>
+					🎨️ Light Color Override
+					<input
+						type="checkbox"
+						checked={Boolean(lightColor)}
+						on:change={({ currentTarget: { checked } }) => {
+							plant.updateConfig(c => ({ ...c, color: checked ? [20, 255, 0] : null }));
+						}}
+					/>
+				</h4>
+				{#if lightColor}
+				<ColorRange
+					type="hue"
+					color={lightColor}
+					on:input={({ detail: { color } }) => updateLightColor(color)}
+				/>
+				<ColorRange
+					type="saturation"
+					color={lightColor}
+					on:input={({ detail: { color } }) => updateLightColor(color)}
+				/>
+				{/if}
+			</label>
+		</div>
 	{/if}
 </div>
 
@@ -174,7 +216,7 @@
 		gap: 0.5em;
 	}
 
-	input {
+	.plant :global(input) {
 		min-width: 0;
 		flex-grow: 1;
 	}

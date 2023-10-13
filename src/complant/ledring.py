@@ -26,16 +26,19 @@ class LEDRing():
 	@staticmethod
 	def COLOR_MOISTURE():
 		from . import models
-		color_neutral = (255, 160, 80)
-		interp_dry_to_neutral = create_colors_interp((255, 25, 0), color_neutral)
-		interp_neutral_to_wet = create_colors_interp(color_neutral, (60, 140, 230))
-		moisture_value = models.moisture.value
-		moisture_thresh = models.config["moisture"]
-		moisture_neutral = moisture_thresh + 0.25
-		if (moisture_value < moisture_neutral):
-			color = interp_dry_to_neutral(moisture_value / moisture_neutral)
+		if models.config["color"] is not None:
+			color = tuple(models.config["color"])
 		else:
-			color = interp_neutral_to_wet((moisture_value - moisture_neutral) / (1 - moisture_neutral))
+			color_neutral = (255, 160, 85)
+			interp_dry_to_neutral = create_colors_interp((255, 12, 0), color_neutral)
+			interp_neutral_to_wet = create_colors_interp(color_neutral, (48, 86, 255))
+			moisture_value = models.moisture.value
+			moisture_thresh = models.config["moisture"]
+			moisture_neutral = moisture_thresh + 0.25
+			if (moisture_value < moisture_neutral):
+				color = interp_dry_to_neutral(moisture_value / moisture_neutral)
+			else:
+				color = interp_neutral_to_wet((moisture_value - moisture_neutral) / (1 - moisture_neutral))
 		return apply_brightness(color)
 
 	def __init__(self, neopixel: NeoPixel):

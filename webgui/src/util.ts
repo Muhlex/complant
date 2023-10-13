@@ -32,3 +32,8 @@ export const debounce = <T extends (...args: Parameters<T>) => void>(
 		}
 	};
 };
+
+export const getID = (() => {
+	let nextID = 0;
+	return () => nextID++;
+})();

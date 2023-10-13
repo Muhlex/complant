@@ -4,6 +4,7 @@ export type PlantConfig = {
 	brightness: number
 	moisture: number
 	character: number
+	color: [number, number, number] | null
 	periods: {
 		light: number
 		conversation: number

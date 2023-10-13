@@ -70,7 +70,8 @@ export class Plant extends Store {
 	}
 
 	private async fetchCharacters() {
-		this.characters = (await request("characters", { host: this.ip })).value as Character[];
+		const json = await request("characters", { host: this.ip });
+		this.characters = json.value as Character[];
 		this.notify();
 	}
 }
