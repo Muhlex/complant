@@ -117,7 +117,7 @@ class DFPlayer:
 
 	async def send_cmd(self, *args, **kwargs):
 		return await self._require_lock(self._send_cmd(*args, **kwargs))
-	async def _send_cmd(self, cmd: int, param1 = 0, param2: int | None = None, timeout = 100):
+	async def _send_cmd(self, cmd: int, param1 = 0, param2: int | None = None, timeout = 200):
 		if param2 == None:
 			param1, param2 = self._uint16_to_bytes(param1)
 
@@ -232,7 +232,7 @@ class DFPlayer:
 
 	async def resume(self):
 		# DFPlayer seems to take long to process resuming
-		await self.send_cmd(0x0D, timeout=150)
+		await self.send_cmd(0x0D, timeout=300)
 
 	async def pause(self):
 		await self.send_cmd(0x0E)
@@ -279,7 +279,7 @@ class DFPlayer:
 		await self.send_cmd(0x0B)
 
 	async def reset(self):
-		await self.send_cmd(0x0C, timeout=250)
+		await self.send_cmd(0x0C, timeout=300)
 
 	async def wait_track(self):
 		await self._events.track_done.wait()
