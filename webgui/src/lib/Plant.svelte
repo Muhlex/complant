@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Plant } from "../models/Plant";
 
-	import { colord } from "colord";
+	import { colord, type Colord } from "colord";
 
 	import TextEditable from "./TextEditable.svelte";
 	import ColorRange from "./ColorRange.svelte";
@@ -9,17 +9,33 @@
 
 	export let plant: Plant;
 
-	const moisturePresets = [["🌵️ Dry", 0.1], ["🪴️ Regular", 0.25], ["🌷️ Wet", 0.4]] as const;
+	const moisturePresets = [["🌵️ Dry", 0.2], ["🪴️ Regular", 0.4], ["🌷️ Wet", 0.6]] as const;
 	$: dry = ($plant.state && $plant.config && $plant.state.moisture < $plant.config.moisture);
 
-	$: lightColor = (() => {
-		if (!$plant.config?.color) return null;
+	const lights: {
+		colord: Colord | null
+		h: number
+		s: number
+	} = { colord: null, h: 96, s: 96 };
+	$: if ($plant.config?.color) {
 		const [r, g, b] = $plant.config.color;
-		return colord({ r, g, b }).toHex();
-	})();
-
-	const updateLightColor = (hex: string) => {
-		const { r, g, b } = colord(hex).rgba;
+		const prev = lights.colord?.rgba;
+		if (!prev || r !== prev.r && g !== prev.g && b !== prev.b) {
+			lights.colord = colord({ r, g, b });
+			const hsv = lights.colord.toHsv();
+			lights.h = hsv.h;
+			lights.s = hsv.s;
+		}
+	} else {
+		lights.colord = null;
+	}
+	const updateLights = (reset = false) => {
+		if (reset) {
+			plant.updateConfig(c => ({ ...c, color: null }));
+			return;
+		}
+		lights.colord = colord({ h: lights.h, s: lights.s, v: 100 });
+		const { r, g, b } = lights.colord.rgba;
 		plant.updateConfig(c => ({ ...c, color: [r, g, b] }));
 	};
 </script>
@@ -142,11 +158,11 @@
 
 		<div class="setting">
 			<label>
-				<h4>🌆️ Standby Lights after</h4>
+				<h4>🌆️ Standby Light after</h4>
 				<div class="row">
 					<input
 						type="range"
-						min="0" max={60 * 60 * 4} step="30"
+						min="0" max={60 * 60} step="15"
 						value={$plant.config.periods.light}
 						on:input={({ currentTarget: { valueAsNumber } }) => {
 							if (valueAsNumber === 0) valueAsNumber = 10;
@@ -155,7 +171,6 @@
 					/>
 					<span>
 						<Period seconds={$plant.config.periods.light} />
-						h
 					</span>
 				</div>
 			</label>
@@ -164,28 +179,29 @@
 		<div class="setting">
 			<label>
 				<h4>
-					🎨️ Light Color Override
+					🎨️ Override Light Color
 					<input
 						type="checkbox"
-						checked={Boolean(lightColor)}
-						on:change={({ currentTarget: { checked } }) => {
-							plant.updateConfig(c => ({ ...c, color: checked ? [20, 255, 0] : null }));
-						}}
+						checked={Boolean(lights.colord)}
+						on:change={({ currentTarget: { checked } }) => updateLights(!checked)}
 					/>
 				</h4>
-				{#if lightColor}
-				<ColorRange
-					type="hue"
-					color={lightColor}
-					on:input={({ detail: { color } }) => updateLightColor(color)}
-				/>
-				<ColorRange
-					type="saturation"
-					color={lightColor}
-					on:input={({ detail: { color } }) => updateLightColor(color)}
-				/>
-				{/if}
 			</label>
+			<div class="column">
+				{#if lights.colord}
+					<ColorRange
+						type="hue"
+						bind:value={lights.h}
+						on:input={() => updateLights()}
+					/>
+					<ColorRange
+						type="saturation"
+						bind:value={lights.s}
+						hue={lights.h}
+						on:input={() => updateLights()}
+					/>
+				{/if}
+			</div>
 		</div>
 	{/if}
 </div>
@@ -225,10 +241,13 @@
 		padding: 0.25em 0.5em;
 	}
 
-	label {
+	label, .column {
 		display: flex;
 		flex-direction: column;
 		gap: 0.5em;
+	}
+	.column {
+		margin-top: 0.5em;
 	}
 	label span {
 		display: inline-block;

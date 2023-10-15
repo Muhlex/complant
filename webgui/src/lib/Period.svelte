@@ -8,13 +8,19 @@
 </script>
 
 <span class="period">
-	<span>{pad(h)}</span>:<span>{pad(m)}</span>:<span>{pad(s)}</span>
+	<span>{pad(h)}<small>h</small></span>
+	<span>{pad(m)}<small>m</small></span>
+	<span>{pad(s)}<small>s</small></span>
 </span>
 
 <style>
 	.period {
 		display: inline-flex;
-		gap: 0.0625em;
+		gap: 0.125em;
 		font-variant-numeric: tabular-nums;
+	}
+
+	small {
+		font-size: 0.75em;
 	}
 </style>

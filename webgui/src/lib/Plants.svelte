@@ -24,7 +24,7 @@
 						<div class="row">
 							<input
 								type="range"
-								min="0" max={60 * 60 * 12} step={60 * 2}
+								min="0" max={60 * 60 * 4} step="30"
 								value={$referencePlant.config.periods.conversation}
 								on:input={({ currentTarget: { valueAsNumber } }) => {
 									for (const plant of plants) {
@@ -34,7 +34,6 @@
 							/>
 							<span>
 								<Period seconds={$referencePlant.config.periods.conversation} />
-								h
 							</span>
 						</div>
 					</label>
