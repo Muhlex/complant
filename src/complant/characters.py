@@ -86,6 +86,32 @@ class Characters:
 						}
 					}
 				}
+			}),
+			Character("Snoop Dogg", trait=C.TRAIT_RUDE, samples={
+				C.TOPIC_GENERAL: {
+					C.MOISTURE_DRY: { _COUNT: 3, _OFFSET: 0,
+						C.MOISTURE_DRY: { _COUNT: 3, _OFFSET: 20,
+							C.TRAIT_KIND: { _COUNT: 3, _OFFSET: 60 },
+							C.TRAIT_RUDE: { _COUNT: 3, _OFFSET: 80 }
+						},
+						C.MOISTURE_WET: { _COUNT: 3, _OFFSET: 40,
+							C.TRAIT_KIND: { _COUNT: 3, _OFFSET: 100 },
+							C.TRAIT_RUDE: { _COUNT: 3, _OFFSET: 120 }
+						}
+					}
+				},
+				C.TOPIC_HUMAN: {
+					C.MOISTURE_DRY: { _COUNT: 3, _OFFSET: 0,
+						C.MOISTURE_DRY: { _COUNT: 3, _OFFSET: 20,
+							C.TRAIT_KIND: { _COUNT: 3, _OFFSET: 60 },
+							C.TRAIT_RUDE: { _COUNT: 3, _OFFSET: 80 }
+						},
+						C.MOISTURE_WET: { _COUNT: 3, _OFFSET: 40,
+							C.TRAIT_KIND: { _COUNT: 3, _OFFSET: 100 },
+							C.TRAIT_RUDE: { _COUNT: 3, _OFFSET: 120 }
+						}
+					}
+				}
 			})
 		]
 
