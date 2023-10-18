@@ -46,7 +46,7 @@ class DFPlayer:
 	EVENT_DONE_FLASH  = 0x3e
 	EVENT_READY       = 0x3f
 
-	def __init__(self, uart_id: int, tx = None, rx = None, retries = 7, debug = False):
+	def __init__(self, uart_id: int, tx = None, rx = None, timeout = 100, retries = 7, debug = False):
 		kwargs = {};
 		if tx is not None: kwargs["tx"] = tx
 		if rx is not None: kwargs["rx"] = rx
@@ -58,6 +58,7 @@ class DFPlayer:
 		)
 		self._stream = Stream(self._uart)
 		self._lock = Lock()
+		self.timeout = timeout;
 		self.retries = retries
 
 		self._buffer_send = bytearray([
@@ -117,9 +118,11 @@ class DFPlayer:
 
 	async def send_cmd(self, *args, **kwargs):
 		return await self._require_lock(self._send_cmd(*args, **kwargs))
-	async def _send_cmd(self, cmd: int, param1 = 0, param2: int | None = None, timeout = 200):
-		if param2 == None:
+	async def _send_cmd(self, cmd: int, param1 = 0, param2: int | None = None, timeout: int | None = None):
+		if param2 is None:
 			param1, param2 = self._uint16_to_bytes(param1)
+		if timeout is None:
+			timeout = self.timeout
 
 		bytes = self._buffer_send
 		bytes[3] = cmd
@@ -140,7 +143,7 @@ class DFPlayer:
 			await self._stream.drain()
 
 			try:
-				await self._read(timeout) # try to read the ACK response
+				await self._read(timeout) # wait for the ACK response
 			except DFPlayerError as error:
 				if retries == 0:
 					raise error
@@ -158,9 +161,9 @@ class DFPlayer:
 
 	async def send_query(self, *args, **kwargs):
 		return await self._require_lock(self._send_query(*args, **kwargs))
-	async def _send_query(self, cmd: int, param1 = 0, param2: int | None = None, timeout = 100):
+	async def _send_query(self, cmd: int, param1 = 0, param2: int | None = None, timeout: int | None = None):
 		await self._send_cmd(cmd, param1, param2, timeout)
-		await self._read(timeout=80)
+		await self._read(timeout=50)
 		bytes = self._buffer_read
 		command = bytes[3]
 		if command != cmd:
@@ -215,7 +218,7 @@ class DFPlayer:
 			await self.send_cmd(0x13, file)
 			return
 
-		self._events.advert_done.set() # playing regular tracks cancels running adverts
+		self._events.advert_done.set() # playing regular tracks also cancels currently running adverts
 		self._events.track_done.set()
 		await sleep_ms(0)
 		self._events.track_done.clear()
@@ -232,7 +235,7 @@ class DFPlayer:
 
 	async def resume(self):
 		# DFPlayer seems to take long to process resuming
-		await self.send_cmd(0x0D, timeout=300)
+		await self.send_cmd(0x0D, timeout=self.timeout + 100)
 
 	async def pause(self):
 		await self.send_cmd(0x0E)
@@ -279,7 +282,7 @@ class DFPlayer:
 		await self.send_cmd(0x0B)
 
 	async def reset(self):
-		await self.send_cmd(0x0C, timeout=300)
+		await self.send_cmd(0x0C, timeout=self.timeout + 200)
 
 	async def wait_track(self):
 		await self._events.track_done.wait()

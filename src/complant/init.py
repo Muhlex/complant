@@ -25,7 +25,7 @@ class IO:
 	def __init__(self):
 		self.led = Pin(2, Pin.OUT)
 		self.pixels = NeoPixel(Pin(23, Pin.OUT), n=24)
-		self.dfplayer = DFPlayer(uart_id=2, debug=True)
+		self.dfplayer = DFPlayer(uart_id=2, timeout=200, debug=True)
 
 		self.moisture = MoistureSensor(Pin(33, Pin.IN))
 		self.motion = MotionSensor(Pin(13, Pin.IN))
