@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Plants } from "../models/Plants";
+	import { PlantsLoadState, type Plants } from "../models/Plants";
 
 	import Panel from "../lib/Panel.svelte";
 	import Period from "../lib/Period.svelte";
@@ -9,8 +9,10 @@
 	$: referencePlant = [...$plants][0];
 </script>
 
-{#if $plants.size === 0}
+{#if $plants.state === PlantsLoadState.Loading}
 	<h2>Finding Plants...</h2>
+{:else if $plants.state === PlantsLoadState.Error}
+	<h2>❌️ Error fetching Plants.</h2>
 {:else}
 	<section>
 		<h2>Global Settings</h2>
@@ -27,9 +29,7 @@
 								min="0" max={60 * 60 * 4} step="30"
 								value={$referencePlant.config.periods.conversation}
 								on:input={({ currentTarget: { valueAsNumber } }) => {
-									for (const plant of plants) {
-										plant.updateConfig(c => ({ ...c, periods: { ...c.periods, conversation: valueAsNumber } }));
-									}
+									plants.updateConfig(c => ({ ...c, periods: { ...c.periods, conversation: valueAsNumber } }));
 								}}
 							/>
 							<span>

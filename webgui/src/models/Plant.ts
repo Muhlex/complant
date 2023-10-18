@@ -35,7 +35,7 @@ export class Plant extends Store {
 			this.fetchConfig();
 			this.fetchState();
 		};
-		this.refreshIntervalID = setInterval(refresh, 1000 * 12);
+		this.refreshIntervalID = setInterval(refresh, 1000 * 4);
 		refresh();
 	}
 
@@ -46,7 +46,7 @@ export class Plant extends Store {
 	private updateConfigRemote = debounce(async (config: PlantConfig) => {
 		await request("config", { host: this.ip, method: "POST", json: config });
 		this.configDirty = false;
-	}, 1000);
+	}, 600);
 
 	updateConfig(updater: (value: PlantConfig) => PlantConfig) {
 		if (!this.config) throw new Error("No plant config available to be updated.");

@@ -9,7 +9,7 @@
 
 	export let plant: Plant;
 
-	const moisturePresets = [["🌵️ Dry", 0.2], ["🪴️ Regular", 0.4], ["🌷️ Wet", 0.6]] as const;
+	const moisturePresets = [["🌵️ Dry", 0.25], ["🪴️ Regular", 0.4], ["🌷️ Wet", 0.6]] as const;
 	$: dry = ($plant.state && $plant.config && $plant.state.moisture < $plant.config.moisture);
 
 	const lights: {
