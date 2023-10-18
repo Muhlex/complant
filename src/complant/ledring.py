@@ -18,27 +18,36 @@ def create_colors_interp(from_color: tuple[int, ...], to_color: tuple[int, ...])
 		return tuple(int(func(frac)) for func in interp_funcs)
 	return fn
 
+color_dry = (255, 8, 0)
+color_neutral = (255, 150, 90)
+color_wet = (48, 72, 255)
+interp_dry_to_neutral = create_colors_interp(color_dry, color_neutral)
+interp_neutral_to_wet = create_colors_interp(color_neutral, color_wet)
+
 class LEDRing():
 	@staticmethod
 	def COLOR_NONE(): return (0, 0, 0)
 	@staticmethod
-	def COLOR_PRIMARY(): return apply_brightness((20, 255, 0))
+	def COLOR_PRIMARY(): return apply_brightness((108, 255, 10))
 	@staticmethod
 	def COLOR_MOISTURE():
 		from . import models
 		if models.config["color"] is not None:
 			color = tuple(models.config["color"])
 		else:
-			color_neutral = (255, 160, 85)
-			interp_dry_to_neutral = create_colors_interp((255, 12, 0), color_neutral)
-			interp_neutral_to_wet = create_colors_interp(color_neutral, (48, 86, 255))
-			moisture_value = models.moisture.value
-			moisture_thresh = models.config["moisture"]
-			moisture_neutral = moisture_thresh + 0.25
-			if (moisture_value < moisture_neutral):
-				color = interp_dry_to_neutral(moisture_value / moisture_neutral)
+			moisture = models.moisture.value
+			threshold = models.config["moisture"]
+			dry = threshold - 0.05
+			neutral = threshold + 0.15
+			wet = threshold + 0.3
+			if moisture < dry:
+				color = color_dry
+			elif moisture < neutral:
+				color = interp_dry_to_neutral((moisture - dry) / (neutral - dry))
+			elif moisture < wet:
+				color = interp_neutral_to_wet((moisture - neutral) / (wet - neutral))
 			else:
-				color = interp_neutral_to_wet((moisture_value - moisture_neutral) / (1 - moisture_neutral))
+				color = color_wet
 		return apply_brightness(color)
 
 	def __init__(self, neopixel: NeoPixel):
@@ -91,7 +100,7 @@ class LEDRing():
 			while True:
 				self._anim_frame.fill(get_color())
 				self._render()
-				await sleep_ms(300)
+				await sleep_ms(200)
 		self._set_anim(anim)
 
 	def circle(self, get_color: Callable[..., tuple[int, ...]], gap = 5, interval = 40):
